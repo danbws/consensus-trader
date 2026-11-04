@@ -25,6 +25,8 @@ Hoje tudo roda com dinheiro fictício. Eu montei isso para responder uma pergunt
 
 **O dinheiro dos ETFs de bitcoin não prevê o dia seguinte.** A correlação entre o fluxo de hoje nos ETFs americanos e o retorno de amanhã foi de +0,04. Saídas grandes funcionam como freio na queda, mas custam na alta, e só uma combinação exata de números ganhou de comprar e segurar nos dois períodos.
 
+**O relatório COT não ganha de comprar e segurar em ações nem em ouro.** A regra clássica de Larry Williams perdeu nos cinco ativos testados, e nenhuma das 36 regras no S&P 500 e no ouro venceu nos dois períodos.
+
 O caderno completo está em [docs/hipoteses-testadas.md](docs/hipoteses-testadas.md).
 
 ## O que tem aqui
@@ -38,6 +40,7 @@ O caderno completo está em [docs/hipoteses-testadas.md](docs/hipoteses-testadas
 | `scripts/relatorio_imposto.py` | Relatório anual para o contador: cada venda em reais pelo dólar PTAX, custo pelo PEPS, dividendos |
 | `scripts/historico.py` | Valor diário por tipo de investimento, para o painel mostrar o ganho de qualquer período |
 | `scripts/estudo_etf_btc*.py` | O estudo dos fluxos dos ETFs de bitcoin |
+| `scripts/estudo_cot.py` | O estudo do relatório COT da CFTC (S&P 500, ouro, prata, títulos, euro) |
 | `user_data/strategies/` | As estratégias do Freqtrade que foram testadas (`RoboSaidas.py` é a que está ligada) |
 | `painel/` | Painel em FastAPI (gráficos, ganhos, configurações) e o bot do Telegram |
 | `third_party/edgar13f/` | Leitor de 13F da SEC, de Jake Schincariol, licença MIT |

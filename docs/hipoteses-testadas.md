@@ -92,3 +92,16 @@ Sem olhar o futuro (o fluxo do dia só é usado a partir do fim do dia seguinte)
 - Menos de 3 anos de dados e poucos episódios de saída forte (2 ou 3 no P1).
 
 **Veredito:** o fluxo dos ETFs não prevê o preço do dia seguinte. Grandes saídas seguidas funcionam como freio em queda, mas custam na alta, e a escolha exata dos números importa demais. **Não muda a decisão de 04/11: cripto continua sem dinheiro real.** Dá para reavaliar quando houver mais dados (fim de 2027), com a regra congelada hoje (10 dias, US$ 1 bilhão) para não escolher de novo olhando o resultado.
+
+## Seguir o relatório COT da CFTC (04/11, scripts/estudo_cot.py)
+
+Pergunta: o relatório semanal de quem está comprado e vendido nos futuros (COT, a base de painéis pagos de "posicionamento institucional") avisa para onde o ativo vai?
+Testado nos ETFs dos futuros: SPY (S&P 500), GLD (ouro), SLV (prata), TLT (título longo) e FXE (euro). Índice COT clássico (posição líquida na escala 0-100 das últimas N semanas), seguindo os comerciais ou os especuladores, N em 26/52/156 semanas, limite em 50/65/80: 18 regras por ativo, 90 no total.
+Sem olhar o futuro: posição de terça só vale a partir da segunda seguinte. Nas paralisações do governo (2018-19 e 2025-26), só depois que a CFTC publicou. Fora do mercado o dinheiro fica no BIL. Custo de 0,1% por troca. P1 = jul/2016 a jun/2021, P2 = jul/2021 a out/2026.
+
+- **A regra clássica de Larry Williams (comerciais, 3 anos, limite 80), marcada antes de rodar, perde de comprar e segurar nos 5 ativos e nos dois períodos.** No S&P 500: 16,4% e 8,5% ao ano, contra 17,4% e 12,7%.
+- **S&P 500 e ouro: nenhuma das 36 regras vence nos dois períodos.** A melhor do P1 no S&P rende 6,0% ao ano no P2 (índice 12,7%) e empata com o sorteio (50%). No ouro, 5,8% contra 15,4%.
+- **16 das 90 regras vencem nos dois períodos, quase todas no título longo e no euro.** Esses dois ficaram parados ou caíram no P2 (TLT −7,0% ao ano), enquanto o caixa rendia 3,5%. Qualquer tempo fora do mercado já ganhava: no TLT, as 18 regras vencem no P2. A melhor do euro rende 3,4% no P2, o mesmo que o caixa.
+- Seguir os especuladores (tendência) foi um pouco melhor que seguir os comerciais (13 contra 3 de 45), mas pelo mesmo motivo do caixa.
+
+**Veredito:** o COT não dá vantagem nos ativos que interessam (ações e ouro). Onde parece funcionar, é o caixa rendendo enquanto o ativo caía. Não entra no robô. Um painel que vende nota a partir do COT precisaria mostrar um resultado medido melhor que este para valer a assinatura.

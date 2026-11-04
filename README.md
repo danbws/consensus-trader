@@ -25,6 +25,8 @@ All of it runs on paper money today. I built it to answer one question: can a sm
 
 **Bitcoin ETF flows do not predict the next day.** The correlation between today's net flow into the US spot ETFs and tomorrow's return was +0.04. Large outflows act as a brake in falling markets but cost you in rising ones, and only one exact parameter set beat buy-and-hold in both periods.
 
+**The COT report does not beat buy-and-hold on stocks or gold.** The classic Larry Williams rule lost on all five assets tested, and none of the 36 rules on the S&P 500 and gold won in both periods.
+
 The full log, in Portuguese, is in [docs/hipoteses-testadas.md](docs/hipoteses-testadas.md).
 
 ## What is inside
@@ -38,6 +40,7 @@ The full log, in Portuguese, is in [docs/hipoteses-testadas.md](docs/hipoteses-t
 | `scripts/relatorio_imposto.py` | Yearly report for a Brazilian accountant: every sale in BRL at the central bank rate (PTAX), FIFO cost, dividends |
 | `scripts/historico.py` | Daily value per asset type, so the panel can show gains for any period |
 | `scripts/estudo_etf_btc*.py` | The bitcoin ETF flow study |
+| `scripts/estudo_cot.py` | The CFTC Commitments of Traders study (S&P 500, gold, silver, bonds, euro) |
 | `user_data/strategies/` | The Freqtrade strategies that were tested (`RoboSaidas.py` is the one running) |
 | `painel/` | FastAPI panel (charts, gains, settings) and the Telegram bot |
 | `third_party/edgar13f/` | SEC 13F parser by Jake Schincariol, MIT |
