@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Entrar | Robô de Trade</title>
+<link rel="icon" href="/icone.png">
+<link rel="apple-touch-icon" href="/icone-180.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Robô">
+<meta name="theme-color" content="#0D1117">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/estilo.css">
+<style>
+  body { min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
+  main { width: 100%; max-width: 360px; }
+  img { width: 72px; height: 72px; border-radius: 16px; display: block; }
+  h1 { font-size: 1.5rem; margin: 18px 0 6px; }
+  p { color: var(--suave); margin: 0 0 22px; }
+  label { margin: 0 0 8px; }
+  button[type=submit] { width: 100%; margin-top: 16px; padding: 12px; min-height: 46px; }
+  .erro { color: var(--queda); margin-top: 14px; min-height: 1.5em; }
+</style>
+</head>
+<body>
+<main>
+  <img src="/icone-180.png" alt="">
+  <h1>Robô de Trade</h1>
+  <p>Digite a senha do painel. Ela foi criada no seu computador.</p>
+  <form id="form">
+    <label for="senha">Senha</label>
+    <input id="senha" type="password" autocomplete="current-password" required>
+    <button class="principal" type="submit">Entrar</button>
+    <div class="erro" id="erro" role="alert"></div>
+  </form>
+</main>
+<script>
+document.getElementById("form").onsubmit = async e => {
+  e.preventDefault();
+  const r = await fetch("/api/entrar", { method: "POST", headers: { "X-Painel": "sim", "Content-Type": "application/json" },
+    body: JSON.stringify({ senha: document.getElementById("senha").value }) });
+  if (r.ok) {
+    const volta = new URLSearchParams(location.search).get("volta") || "/terminal";
+    location.href = /^\/[a-z]*$/.test(volta) ? volta : "/terminal";   // so caminhos deste painel
+  } else {
+    document.getElementById("erro").textContent = (await r.json().catch(() => ({}))).detail || "Não foi possível entrar.";
+  }
+};
+</script>
+</body>
+</html>

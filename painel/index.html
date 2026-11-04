@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="/icone.png">
+<link rel="apple-touch-icon" href="/icone-180.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Robô">
+<meta name="theme-color" content="#0D1117">
+<title>Visão geral | Robô de Trade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/estilo.css">
+<style>
+  /* topo da página */
+  .hero { display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: flex-end; justify-content: space-between; }
+  .hero-texto { min-width: 0; }
+  .rotulo { color: var(--suave); font-size: .9rem; margin: 0 0 6px; }
+  .grande { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 500;
+            font-size: clamp(2.4rem, 7.5vw, 4rem); line-height: 1; letter-spacing: -.02em; margin: 0; }
+  .frase { font-size: 1rem; margin: 14px 0 0; max-width: 62ch; color: var(--tinta); }
+  .estado { display: inline-flex; align-items: center; gap: 8px; font-size: .88rem; color: var(--suave); margin-bottom: 14px; }
+  .estado .ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--suave); }
+  .estado[data-tipo="ok"] .ponto { background: var(--alta); }
+  .estado[data-tipo="pausa"] .ponto { background: var(--alerta); }
+  .estado[data-tipo="off"] .ponto { background: var(--queda); }
+  .atualizado { color: var(--suave); }
+  .botoes-topo { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* régua do piso de segurança */
+  .regua { margin-top: 32px; padding: 20px 20px 8px; }
+  .regua h2 { margin-bottom: 18px; }
+  .trilho { position: relative; height: 16px; border-radius: 8px; background: var(--faixa-ok); }
+  .trilho .zona { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 8px 0 0 8px; background: var(--faixa-perigo); }
+  .reg-marca { position: absolute; top: -6px; width: 2px; height: 28px; background: var(--suave); }
+  .reg-marca.atual { width: 20px; height: 20px; top: -2px; margin-left: -10px; border-radius: 50%;
+                     background: var(--tinta); border: 4px solid var(--painel); outline: 2px solid var(--acento); }
+  .rotulos { position: relative; height: 48px; margin-top: 14px; font-size: .85rem; color: var(--suave); }
+  .rotulos > span { position: absolute; transform: translateX(-50%); white-space: nowrap; text-align: center; line-height: 1.35; }
+  .rotulos > span:first-child { transform: none; text-align: left; }
+  .rotulos b { display: block; color: var(--tinta); font-weight: 600; }
+  .rotulos .num { color: var(--tinta); }
+
+  /* blocos Cripto e Ações EUA */
+  .resumo-bloco { display: flex; flex-direction: column; gap: 14px; }
+  .resumo-bloco .valor { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.7rem; font-weight: 500; line-height: 1.1; margin: 0; }
+  .resumo-bloco .link { margin-top: auto; font-weight: 600; }
+  .resumo-bloco .kpis { margin-top: 0; }
+
+  /* seus ganhos: todos os investimentos juntos, por período */
+  .ganhos { margin-bottom: 40px; }
+  .ganhos-topo { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .ganhos-topo h2 { margin: 0; }
+  .periodos { display: flex; flex-wrap: wrap; gap: 6px; }
+  .periodos button { padding: 6px 12px; font-size: .88rem; border-radius: 999px; }
+  .periodos button[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--fundo); }
+  .datas { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin: -6px 0 18px; }
+  .datas[hidden] { display: none; }
+  .datas label { margin: 0 0 4px; font-size: .85rem; }
+  .datas input { width: auto; }
+  .ganho-total { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; }
+  .ganho-total .grande { font-size: clamp(2rem, 6vw, 3.2rem); }
+  .ganho-total .linha-grafico svg { width: 100%; height: 120px; display: block; }
+  .ganho-tipos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+  .ganho-tipos .valor { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.5rem; font-weight: 500; margin: 4px 0 0; }
+  .ganho-tipos h3 { margin: 0; font-size: 1rem; }
+  .ganho-tipos .nota { color: var(--suave); font-size: .85rem; margin: 10px 0 0; }
+  @media (max-width: 759px) { .ganho-total, .ganho-tipos { grid-template-columns: 1fr; } }
+
+  .barras svg { width: 100%; height: 170px; display: block; }
+  @media (prefers-reduced-motion: no-preference) { .reg-marca.atual { transition: left .6s ease; } }
+  @media (max-width: 560px) { .estado { flex-wrap: wrap; } .atualizado { flex-basis: 100%; padding-left: 16px; } .botoes-topo { width: 100%; } .botoes-topo button { flex: 1; } }
+</style>
+</head>
+<body>
+<script src="/casca.js"></script>
+<main class="pagina">
+  <section class="ganhos" aria-labelledby="tGanhos">
+    <div class="ganhos-topo">
+      <h2 id="tGanhos">Seus ganhos</h2>
+      <div class="periodos" id="periodos" role="group" aria-label="Período">
+        <button type="button" data-p="7d">7 dias</button>
+        <button type="button" data-p="30d">30 dias</button>
+        <button type="button" data-p="mes">Este mês</button>
+        <button type="button" data-p="ano">Este ano</button>
+        <button type="button" data-p="tudo" aria-pressed="true">Desde o início</button>
+        <button type="button" data-p="datas">Escolher datas</button>
+      </div>
+    </div>
+    <form class="datas" id="formDatas" hidden>
+      <div><label for="gDe">De</label><input type="date" id="gDe" required></div>
+      <div><label for="gAte">Até</label><input type="date" id="gAte" required></div>
+      <button class="principal" type="submit">Ver</button>
+    </form>
+    <div class="ganho-total">
+      <div class="cartao">
+        <p class="rotulo">Tudo junto, em reais</p>
+        <p class="grande num" id="gTotal">R$ --</p>
+        <p class="ajuda" id="gTotalFrase">Calculando.</p>
+      </div>
+      <div class="cartao linha-grafico">
+        <p class="rotulo">Ganho acumulado no período (R$), dia a dia</p>
+        <div id="gGrafico"></div>
+      </div>
+    </div>
+    <div class="ganho-tipos" id="gTipos"></div>
+    <p class="ajuda" id="gAviso" style="margin-top:12px"></p>
+  </section>
+
+  <div class="hero">
+    <div class="hero-texto">
+      <div class="estado" id="estado" data-tipo="off"><span class="ponto"></span><span id="estadoTexto">Conectando ao robô</span><span class="atualizado" id="atualizado"></span></div>
+      <p class="rotulo">Patrimônio no cripto</p>
+      <p class="grande num" id="patrimonio">R$ --</p>
+      <p class="frase" id="frase">Buscando os dados do robô.</p>
+    </div>
+    <div class="botoes-topo">
+      <button id="btPausar">Pausar compras</button>
+      <button id="btRetomar" class="principal" hidden>Retomar compras</button>
+      <button id="btVender" class="perigo">Vender tudo e pausar</button>
+    </div>
+  </div>
+  <div class="aviso" id="aviso" hidden></div>
+
+  <div class="regua cartao" aria-label="Distância até o piso de segurança">
+    <h2>Distância até a pausa automática</h2>
+    <div class="trilho" id="trilho">
+      <div class="zona" id="faixaPerigo"></div>
+      <div class="reg-marca" id="marcaPiso"></div>
+      <div class="reg-marca" id="marcaInicio"></div>
+      <div class="reg-marca atual" id="marcaAtual"></div>
+    </div>
+    <div class="rotulos" id="rotulos"></div>
+  </div>
+
+  <div class="grade-2" style="margin-top:16px">
+    <section class="cartao resumo-bloco" aria-labelledby="tCripto">
+      <h2 id="tCripto">Cripto</h2>
+      <p class="valor" id="cSaldo">-</p>
+      <div class="kpis">
+        <div><span>Resultado desde o início</span><b id="cResultado">-</b></div>
+        <div><span>Moedas compradas</span><b id="cMoedas">-</b></div>
+      </div>
+      <a class="link" href="/terminal">Abrir gráficos do cripto</a>
+    </section>
+    <section class="cartao resumo-bloco" aria-labelledby="tAcoes">
+      <h2 id="tAcoes">Ações EUA</h2>
+      <div id="blocoAcoes"><p class="ajuda">Buscando a conta na Alpaca.</p></div>
+    </section>
+  </div>
+
+  <section class="sec">
+    <h2>Onde o dinheiro está agora</h2>
+    <p class="ajuda">Moedas que o robô comprou e ainda não vendeu. O valor muda a cada atualização do preço.</p>
+    <div id="abertas"></div>
+  </section>
+
+  <section class="sec">
+    <h2>Resultado dos últimos 14 dias</h2>
+    <p class="ajuda">Quanto o robô ganhou ou perdeu em cada dia, só com as operações já fechadas.</p>
+    <div class="barras cartao" id="barras"></div>
+  </section>
+
+  <section class="sec">
+    <h2>Segurança</h2>
+    <p class="ajuda">As travas que impedem o robô de perder tudo. Quando uma delas dispara, ele para de comprar, mas continua cuidando das moedas que já tem.</p>
+    <ul class="regras" id="regras"></ul>
+  </section>
+
+  <section class="sec">
+    <h2>Últimas operações</h2>
+    <p class="ajuda" id="resumoOps"></p>
+    <div id="operacoes"></div>
+  </section>
+
+  <section class="sec">
+    <h2>Radar de moedas</h2>
+    <p class="ajuda" id="radarAjuda">Moedas com mais força de alta pelos números da Binance. É um levantamento de dados, não uma recomendação de compra.</p>
+    <div id="radar"></div>
+  </section>
+</main>
+
+<dialog id="confirma">
+  <h2 id="confTitulo"></h2>
+  <p id="confTexto"></p>
+  <div class="acoes">
+    <button id="confNao">Cancelar</button>
+    <button id="confSim" class="principal"></button>
+  </div>
+</dialog>
+
+<script>
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const usd = v => Number(v ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "USD" });
+const pct = v => (v > 0 ? "+" : "") + v.toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + "%";
+const sinal = v => (v > 0 ? "alta" : v < 0 ? "queda" : "");
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const moeda = par => esc(String(par).split("/")[0]);
+const MOTIVOS = { roi: "Alvo de lucro", stop_loss: "Stop", trailing_stop_loss: "Stop móvel",
+  exit_signal: "Sinal de saída", rsi_esticado: "Sinal de saída", force_exit: "Venda manual",
+  emergency_exit: "Venda de emergência" };
+
+function haQuanto(data) {
+  const min = Math.max(0, Math.round((Date.now() - new Date(data).getTime()) / 60000));
+  if (min < 60) return min + " min";
+  const h = Math.floor(min / 60);
+  return h < 48 ? h + " h" : Math.floor(h / 24) + " dias";
+}
+function dataCurta(d) {
+  return new Date(d).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
+// ---------------------------------------------------------------- seus ganhos (todos os tipos, por período)
+let periodoGanhos = (() => { try { return localStorage.getItem("periodoGanhos") || "tudo"; } catch { return "tudo"; } })();
+const dataBr = d => d.split("-").reverse().join("/");
+const comSinal = (txt, v) => `<span class="${sinal(v)}">${v > 0 ? "+" : v < 0 ? "−" : ""}${txt}</span>`;
+
+function graficoLinha(serie) {
+  if (serie.length < 2) return `<p class="ajuda">O gráfico aparece a partir do segundo dia do período.</p>`;
+  // ganho acumulado em reais (começa em zero; dinheiro colocado não sobe a linha)
+  const v = [0, ...serie.map(p => p.ganho_brl)], min = Math.min(...v), max = Math.max(...v), faixa = (max - min) || 1;
+  const L = 600, A = 120, pad = 8, y = x => (pad + (1 - (x - min) / faixa) * (A - 2 * pad)).toFixed(1);
+  const pts = v.map((x, i) => `${(i / (v.length - 1) * L).toFixed(1)},${y(x)}`);
+  const fim = v[v.length - 1], cor = fim >= 0 ? "var(--alta)" : "var(--queda)";
+  return `<svg viewBox="0 0 ${L} ${A}" preserveAspectRatio="none" role="img" aria-label="Ganho acumulado de ${brl.format(fim)} entre ${dataBr(serie[0].dia)} e ${dataBr(serie[serie.length - 1].dia)}">
+    <line x1="0" x2="${L}" y1="${y(0)}" y2="${y(0)}" stroke="var(--linha)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+    <polyline points="${pts.join(" ")}" fill="none" stroke="${cor}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>
+    <div class="kpis" style="margin-top:8px"><div><span>Início (${dataBr(serie[0].dia)})</span><b>${brl.format(0)}</b></div>
+    <div><span>${dataBr(serie[serie.length - 1].dia)}</span><b class="${sinal(fim)}">${brl.format(fim)}</b></div></div>`;
+}
+
+function cartaoTipo(t) {
+  const emReal = t.moeda === "BRL";
+  const fmt = emReal ? x => brl.format(x) : usd;
+  const ganho = comSinal(fmt(Math.abs(t.ganho)), t.ganho);
+  const sinalTxt = v => (v > 0 ? "+" : v < 0 ? "−" : "");
+  const extra = emReal ? "" : `<div><span>Ganho em reais</span><b class="${sinal(t.ganho_brl)}">${sinalTxt(t.ganho_brl)}${brl.format(Math.abs(t.ganho_brl))}</b></div>`;
+  const nota = emReal ? "" : `<p class="nota">Dos ${brl.format(t.ganho_brl)} em reais, ${brl.format(t.efeito_dolar_brl)} vieram só da variação do dólar.</p>`;
+  const colocado = t.aportes ? `<div><span>Colocado no período</span><b>${fmt(t.aportes)}</b></div>` : "";
+  return `<section class="cartao">
+    <h3>${esc(t.nome)}</h3>
+    <p class="valor">${ganho} <span class="${sinal(t.ganho)}" style="font-size:1rem">(${pct(t.ganho_pct)})</span></p>
+    <div class="kpis"><div><span>Vale hoje</span><b>${fmt(t.valor_fim)}</b></div>${extra}${colocado}</div>${nota}
+    <p class="nota">Começou em ${dataBr(t.inicio_serie)}.</p></section>`;
+}
+
+async function carregarGanhos(de, ate) {
+  document.querySelectorAll("#periodos button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === periodoGanhos)));
+  $("formDatas").hidden = periodoGanhos !== "datas";
+  if (periodoGanhos === "datas" && !(de && ate)) return;
+  const q = periodoGanhos === "datas" ? `de=${de}&ate=${ate}` : `periodo=${periodoGanhos}`;
+  try {
+    const r = await fetch("/api/ganhos?" + q);
+    const g = await r.json();
+    if (!r.ok) throw new Error(g.detail || "Não foi possível calcular.");
+    const t = g.total;
+    $("gTotal").innerHTML = comSinal(brl.format(Math.abs(t.ganho_brl)), t.ganho_brl);
+    const primeiro = g.tipos.map(x => x.inicio_serie).sort()[0];  // "desde o início" começa no 1º investimento
+    const desde = primeiro && g.de < primeiro ? primeiro : g.de;
+    $("gTotalFrase").textContent = `${pct(t.ganho_pct)} de ${dataBr(desde)} a ${dataBr(g.ate)}. Patrimônio somado ${g.ate === new Date().toISOString().slice(0, 10) ? "hoje" : "em " + dataBr(g.ate)}: ${brl.format(t.valor_fim_brl)}.`;
+    $("gGrafico").innerHTML = graficoLinha(g.serie);
+    $("gTipos").innerHTML = g.tipos.map(cartaoTipo).join("");
+    $("gAviso").textContent = "Tudo aqui é simulado (cripto no simulado e ações na conta de papel). Os dias em que o robô ficou desligado repetem o último valor."
+      + (g.dolar_hoje ? ` Dólar usado hoje: ${brl.format(g.dolar_hoje)} (PTAX do Banco Central).` : "");
+  } catch (erro) { $("gTotalFrase").textContent = erro.message; }
+}
+$("periodos").addEventListener("click", e => {
+  const b = e.target.closest("button[data-p]");
+  if (!b) return;
+  periodoGanhos = b.dataset.p;
+  try { localStorage.setItem("periodoGanhos", periodoGanhos); } catch {}
+  carregarGanhos();
+});
+$("formDatas").onsubmit = e => { e.preventDefault(); carregarGanhos($("gDe").value, $("gAte").value); };
+$("gAte").value = new Date().toISOString().slice(0, 10);
+$("gDe").value = "2026-10-21";
+if (periodoGanhos === "datas") carregarGanhos($("gDe").value, $("gAte").value); else carregarGanhos();
+setInterval(() => { if (periodoGanhos !== "datas") carregarGanhos(); }, 120000);
+
+let ultimo = null;
+const AJUDA_RADAR = "Moedas com mais força de alta pelos números da Binance (o robô só opera as que têm par em real). É um levantamento de dados, não uma recomendação de compra.";
+
+function desenhar(d) {
+  ultimo = d;
+  const guarda = d.guarda || {};
+  const inicial = guarda.saldo_inicial ?? d.saldo_inicial ?? 0;
+  const piso = guarda.saldo_minimo ?? d.saldo_minimo ?? 0;
+  const patrimonio = guarda.patrimonio ?? d.saldo?.total ?? inicial;
+  const pausa = d.pausa_arquivo || guarda.pausa;
+  const travaGeral = (d.travas || []).find(t => t.active && t.pair === "*");
+
+  // estado
+  let tipo = "ok", texto = "Robô operando";
+  if (!d.robo_ligado) { tipo = "off"; texto = "Robô desligado"; }
+  else if (d.estado !== "running") { tipo = "off"; texto = "Robô parado"; }
+  else if (pausa) { tipo = "pausa"; texto = "Compras pausadas"; }
+  else if (travaGeral) { tipo = "pausa"; texto = "Compras travadas por proteção"; }
+  $("estado").dataset.tipo = tipo;
+  $("estadoTexto").textContent = texto + (d.dry_run ? " (saldo fictício)" : d.robo_ligado ? " (DINHEIRO REAL)" : "");
+  $("atualizado").textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR");
+  $("btPausar").hidden = !!pausa; $("btRetomar").hidden = !pausa;
+  $("btPausar").disabled = $("btVender").disabled = !d.robo_ligado;
+
+  const aviso = $("aviso");
+  if (!d.robo_ligado) {
+    aviso.hidden = false;
+    aviso.textContent = "O painel não encontrou o robô. Abra o PowerShell e rode iniciar-robo.ps1 na pasta robo-trade. Os números abaixo são da última vez que ele rodou.";
+  } else if (pausa) {
+    aviso.hidden = false; aviso.textContent = pausa + " Ele continua vendendo no alvo ou no stop.";
+  } else if (travaGeral) {
+    aviso.hidden = false;
+    aviso.textContent = "Proteção ativa até " + dataCurta(travaGeral.lock_end_time) + ": " + travaGeral.reason;
+  } else aviso.hidden = true;
+
+  // destaque
+  const dif = patrimonio - inicial;
+  $("patrimonio").textContent = brl.format(patrimonio);
+  $("frase").innerHTML = inicial
+    ? `Começou com <span class="num">${brl.format(inicial)}</span>. ` + (Math.abs(dif) < 0.005
+        ? "Por enquanto está no zero a zero."
+        : `<span class="${sinal(dif)}">${dif > 0 ? "Ganhou" : "Perdeu"} <span class="num">${brl.format(Math.abs(dif))} (${pct(dif / inicial * 100)})</span></span> desde o início.`)
+      + (patrimonio > piso ? ` Faltam <span class="num">${brl.format(patrimonio - piso)}</span> para a pausa automática.` : "")
+    : "";
+
+  // bloco Cripto
+  $("cSaldo").textContent = brl.format(patrimonio);
+  $("cResultado").innerHTML = `<span class="${sinal(dif)}">${brl.format(dif)} (${pct(inicial ? dif / inicial * 100 : 0)})</span>`;
+  $("cMoedas").textContent = String((d.abertas || []).length);
+
+  // regua: de (piso - folga) ate o maior entre inicio e atual + folga
+  const min = Math.max(0, piso - (inicial - piso) * 0.5);
+  const max = Math.max(inicial, patrimonio) + (inicial - piso) * 0.5;
+  const pos = v => Math.min(100, Math.max(0, (v - min) / (max - min) * 100));
+  $("faixaPerigo").style.width = pos(piso) + "%";
+  $("marcaPiso").style.left = pos(piso) + "%";
+  $("marcaInicio").style.left = pos(inicial) + "%";
+  $("marcaAtual").style.left = pos(patrimonio) + "%";
+  $("rotulos").innerHTML =
+    `<span style="left:0"><b>Pausa</b>abaixo de <span class="num">${brl.format(piso)}</span></span>` +
+    `<span style="left:${pos(inicial)}%"><b>Início</b><span class="num">${brl.format(inicial)}</span></span>`;
+
+  // abertas
+  const abertas = d.abertas || [];
+  $("abertas").innerHTML = abertas.length ? `<div class="tabela"><table>
+    <thead><tr><th>Moeda</th><th class="num">Investido</th><th class="num">Preço de compra</th><th class="num">Preço agora</th><th class="num">Resultado</th><th>Há</th></tr></thead>
+    <tbody>${abertas.map(t => `<tr>
+      <td class="moeda">${moeda(t.pair)}</td>
+      <td class="num">${brl.format(t.stake_amount)}</td>
+      <td class="num">${brl.format(t.open_rate)}</td>
+      <td class="num">${brl.format(t.current_rate)}</td>
+      <td class="num ${sinal(t.profit_abs)}">${brl.format(t.profit_abs)} (${pct(t.profit_pct)})</td>
+      <td class="num">${haQuanto(t.open_date + "Z")}</td></tr>`).join("")}</tbody></table></div>`
+    : `<div class="vazio">Nenhuma moeda comprada agora. Todo o saldo está em real, esperando um sinal de compra.</div>`;
+
+  // barras dos dias
+  const dias = (d.diario || []).slice().reverse();
+  if (dias.length) {
+    const maxAbs = Math.max(0.01, ...dias.map(x => Math.abs(x.abs_profit)));
+    const L = 100 / dias.length;
+    $("barras").innerHTML = `<svg viewBox="0 0 100 60" preserveAspectRatio="none" role="img" aria-label="Resultado por dia">
+      <line x1="0" x2="100" y1="30" y2="30" stroke="var(--linha)" stroke-width=".3"/>
+      ${dias.map((x, i) => { const h = Math.abs(x.abs_profit) / maxAbs * 26; const y = x.abs_profit >= 0 ? 30 - h : 30;
+        return `<rect x="${i * L + L * .18}" width="${L * .64}" y="${y}" height="${Math.max(h, .4)}" rx=".6"
+          fill="${x.abs_profit >= 0 ? "var(--alta)" : "var(--queda)"}"><title>${new Date(x.date + "T12:00").toLocaleDateString("pt-BR")}: ${brl.format(x.abs_profit)} em ${x.trade_count} operações</title></rect>`; }).join("")}
+    </svg><p class="ajuda" style="margin:6px 0 0">${new Date(dias[0].date + "T12:00").toLocaleDateString("pt-BR")} a ${new Date(dias.at(-1).date + "T12:00").toLocaleDateString("pt-BR")}. Passe o mouse numa barra para ver o valor.</p>`;
+  } else $("barras").innerHTML = `<span class="muted">Sem dias para mostrar ainda.</span>`;
+
+  // seguranca
+  const travasMoeda = (d.travas || []).filter(t => t.active && t.pair !== "*");
+  const fng = guarda.fear_greed;
+  const regras = [
+    ["Piso de saldo", patrimonio >= piso ? ["ok", "Livre"] : ["off", "Disparado"],
+      `Se o saldo cair abaixo de ${brl.format(piso)}, o robô pausa as compras sozinho e só volta quando você clicar em Retomar.`],
+    ["Perda máxima por operação", ["ok", d.stoploss ? pct(d.stoploss * 100) : "Ativo"],
+      "Cada compra tem um stop: se a moeda cair esse tanto, o robô vende para não perder mais."],
+    ["Operações ao mesmo tempo", ["ok", `Até ${d.max_operacoes ?? 2}`],
+      "O saldo é dividido. Uma moeda ruim não leva o dinheiro todo."],
+    ["Sequência de stops", travaGeral && /stop/i.test(travaGeral.reason) ? ["pausa", "Travado"] : ["ok", "Livre"],
+      "Três stops em 6 horas: o robô fica 6 horas sem comprar."],
+    ["Queda forte em 48 horas", travaGeral && /drawdown/i.test(travaGeral.reason) ? ["pausa", "Travado"] : ["ok", "Livre"],
+      "Se o saldo cair 10% em dois dias, o robô fica 24 horas sem comprar."],
+    ["Moedas de castigo", travasMoeda.length ? ["pausa", travasMoeda.map(t => moeda(t.pair)).join(", ")] : ["ok", "Nenhuma"],
+      "Moeda que deu prejuízo nas duas últimas vezes fica 12 horas fora. Depois de cada venda, a mesma moeda espera 30 minutos."],
+    ["Humor do mercado (Fear & Greed)", fng == null ? ["pausa", "Sem dado"] : [fng >= (guarda.fng_max_entrada ?? 80) ? "pausa" : "ok", `${fng} de 100`],
+      "Índice diário de medo (0) a euforia (100). Em euforia, a partir de 80, o robô não compra."],
+  ];
+  $("regras").innerHTML = regras.map(([n, [c, v], a]) =>
+    `<li><span>${n}</span><span class="selo ${c}">${esc(v)}</span><small>${a}</small></li>`).join("");
+
+  // operacoes fechadas
+  const ops = (d.operacoes || []).filter(t => !t.is_open).reverse();
+  const l = d.lucro || {};
+  $("resumoOps").textContent = l.closed_trade_count
+    ? `${l.closed_trade_count} operações fechadas: ${l.winning_trades} com lucro e ${l.losing_trades} com prejuízo. Resultado somado: ${brl.format(l.profit_closed_coin)}.`
+    : "Nenhuma operação fechada ainda. Nesta estratégia o robô faz menos de uma operação por dia, em média.";
+  $("operacoes").innerHTML = ops.length ? `<div class="tabela"><table>
+    <thead><tr><th>Moeda</th><th>Comprou</th><th>Vendeu</th><th>Por quê</th><th class="num">Investido</th><th class="num">Resultado</th></tr></thead>
+    <tbody>${ops.slice(0, 15).map(t => `<tr>
+      <td class="moeda">${moeda(t.pair)}</td><td class="num">${dataCurta(t.open_date + "Z")}</td><td class="num">${dataCurta(t.close_date + "Z")}</td>
+      <td>${esc(MOTIVOS[t.exit_reason] || t.exit_reason)}</td><td class="num">${brl.format(t.stake_amount)}</td>
+      <td class="num ${sinal(t.profit_abs)}">${brl.format(t.profit_abs)} (${pct(t.profit_pct)})</td></tr>`).join("")}</tbody></table></div>`
+    : "";
+
+  // radar
+  const radar = Array.isArray(d.radar) ? d.radar : [];
+  if (radar.length) {
+    const p = v => v == null ? "-" : `<span class="${sinal(v)}">${pct(v)}</span>`;
+    const top = radar.slice().sort((a, b) => (b.nota ?? 0) - (a.nota ?? 0)).slice(0, 12);
+    $("radarAjuda").textContent = AJUDA_RADAR + (radar[0].gerado_em ? ` Levantado em ${dataCurta(radar[0].gerado_em)}.` : "");
+    $("radar").innerHTML = `<div class="tabela"><table>
+      <thead><tr><th>Moeda</th><th class="num">7 dias</th><th class="num">30 dias</th><th class="num">90 dias</th><th>Tendência</th><th>Tem par em real</th><th class="num">Nota</th></tr></thead>
+      <tbody>${top.map(r => `<tr><td class="moeda">${moeda(r.par)}</td><td class="num">${p(r.ret_7d)}</td><td class="num">${p(r.ret_30d)}</td>
+        <td class="num">${p(r.ret_90d)}</td><td>${r.acima_ma200 ? "Alta" : "Baixa"}</td><td>${r.tem_par_brl ? "Sim" : "Não"}</td>
+        <td class="num">${r.nota == null ? "-" : Number(r.nota).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}</td></tr>`).join("")}</tbody></table></div>`;
+  } else $("radar").innerHTML = `<div class="vazio">O radar ainda não foi gerado. Rode scripts\\radar_moedas.py para criar a lista.</div>`;
+}
+
+async function atualizar() {
+  try { desenhar(await (await fetch("/api/resumo")).json()); }
+  catch { $("estado").dataset.tipo = "off"; $("estadoTexto").textContent = "Painel sem conexão"; }
+}
+
+// bloco Ações EUA: resumo da conta de papel na corretora em uso (Alpaca ou IBKR)
+async function atualizarAcoes() {
+  const alvo = $("blocoAcoes");
+  try {
+    const a = await (await fetch("/api/acoes")).json();
+    if (!a.conectada) {
+      alvo.innerHTML = a.erro
+        ? `<p class="ajuda">${esc(a.erro)}</p><a class="link" href="/acoes">Ver detalhes em Ações EUA</a>`
+        : `<p class="ajuda">A conta de papel de ações não está conectada. Conecte para acompanhar uma carteira de teste em dólar.</p><a class="link" href="/conta#alpaca">Conectar em Configurações</a>`;
+      return;
+    }
+    const pos = a.posicoes || [];
+    const investido = pos.reduce((s, p) => s + Number(p.market_value || 0), 0);
+    const resultado = pos.reduce((s, p) => s + Number(p.unrealized_pl || 0), 0);
+    alvo.innerHTML = `<div class="resumo-bloco"><p class="valor">${usd(investido)}</p>
+      <div class="kpis"><div><span>Resultado nas ações</span><b class="${sinal(resultado)}">${usd(resultado)}</b></div>
+        <div><span>Ações na carteira</span><b>${pos.length}</b></div></div>
+      <a class="link" href="/acoes">Abrir Ações EUA</a></div>`;
+  } catch {
+    alvo.innerHTML = `<p class="ajuda">Não foi possível ler a conta de ações agora.</p>`;
+  }
+}
+
+function confirmar(titulo, texto, botao) {
+  return new Promise(ok => {
+    $("confTitulo").textContent = titulo; $("confTexto").textContent = texto; $("confSim").textContent = botao;
+    const dlg = $("confirma"); dlg.showModal();
+    $("confSim").onclick = () => { dlg.close(); ok(true); };
+    $("confNao").onclick = () => { dlg.close(); ok(false); };
+  });
+}
+async function acao(rota) {
+  const r = await fetch(rota, { method: "POST", headers: { "X-Painel": "sim" } });
+  const corpo = await r.json().catch(() => ({}));
+  $("aviso").hidden = false; $("aviso").textContent = corpo.mensagem || corpo.detail || "Feito.";
+  setTimeout(atualizar, 1500);
+}
+$("btPausar").onclick = async () => {
+  if (await confirmar("Pausar compras?", "O robô para de comprar. As moedas que ele já tem continuam com stop e alvo de lucro.", "Pausar compras")) acao("/api/pausar");
+};
+$("btRetomar").onclick = () => acao("/api/retomar");
+$("btVender").onclick = async () => {
+  if (await confirmar("Vender tudo e pausar?", "O robô vende agora todas as moedas abertas, pelo preço do momento, e para de comprar até você retomar.", "Vender tudo e pausar")) acao("/api/vender-tudo");
+};
+
+atualizar();
+setInterval(atualizar, 10000);
+atualizarAcoes();
+setInterval(atualizarAcoes, 30000);
+</script>
+</body>
+</html>

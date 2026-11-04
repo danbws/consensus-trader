@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "bot_name": "consensus-trader",
+    "strategy": "RoboSaidaMovel",
+    "dry_run": true,
+    "initial_state": "running",
+    "dry_run_wallet": 50,
+    "stake_currency": "BRL",
+    "stake_amount": "unlimited",
+    "tradable_balance_ratio": 0.99,
+    "max_open_trades": 2,
+    "guarda": {
+        "saldo_minimo": 33
+    },
+    "fiat_display_currency": "BRL",
+    "timeframe": "15m",
+    "trading_mode": "spot",
+    "cancel_open_orders_on_exit": true,
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 10,
+        "unit": "minutes"
+    },
+    "entry_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exit_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exchange": {
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "pair_whitelist": [
+            "BTC/BRL",
+            "ETH/BRL",
+            "SOL/BRL",
+            "XRP/BRL",
+            "BNB/BRL",
+            "ADA/BRL",
+            "LINK/BRL",
+            "AVAX/BRL",
+            "NEAR/BRL",
+            "SUI/BRL",
+            "LTC/BRL",
+            "PEPE/BRL"
+        ],
+        "pair_blacklist": []
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "api_server": {
+        "enabled": true,
+        "listen_ip_address": "127.0.0.1",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": false,
+        "jwt_secret_key": "troque-por-um-texto-aleatorio-longo",
+        "ws_token": "troque-por-outro-texto-aleatorio",
+        "CORS_origins": [],
+        "username": "robo",
+        "password": "troque-esta-senha"
+    },
+    "internals": {
+        "process_throttle_secs": 10
+    }
+}

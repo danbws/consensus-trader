@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ações EUA | Robô de Trade</title>
+<link rel="icon" href="/icone.png">
+<link rel="apple-touch-icon" href="/icone-180.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0D1117">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/estilo.css">
+<style>
+  .faixa { display: inline-block; font-weight: 500; font-size: .85rem; padding: 3px 10px; border-radius: var(--raio-b);
+           border: 1px solid var(--linha); background: var(--painel); color: var(--alerta); margin-bottom: 10px; }
+  .grande { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 500;
+            font-size: clamp(2.2rem, 7vw, 3.4rem); margin: 6px 0 0; line-height: 1; letter-spacing: -.02em; }
+  .conectada { display: flex; gap: 8px 16px; align-items: center; flex-wrap: wrap; margin: 0 0 4px; color: var(--suave); font-size: .9rem; }
+  .btn-tab { min-height: 0; padding: 6px 12px; }
+</style>
+</head>
+<body>
+<script src="/casca.js"></script>
+<main class="pagina">
+  <header class="cab-pag">
+    <span class="faixa">Conta de papel: dinheiro fictício</span>
+    <h1>Ações EUA</h1>
+    <p class="ajuda" id="sobreConta">Conta de teste. A carteira de consenso troca sozinha quando a lista dos investidores muda; qualquer outra ordem só vai para a corretora com o seu "sim".</p>
+  </header>
+
+  <div id="conexao"></div>
+
+  <section class="sec" id="blocoConta" hidden>
+    <h2>Suas ações</h2>
+    <p class="grande" id="patrimonio"></p>
+    <p class="ajuda" id="frasePatrimonio"></p>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section class="sec" id="blocoPropostas" hidden>
+    <h2>Ordens para aprovar</h2>
+    <p class="ajuda" id="propFonte">Ordens propostas e aprovadas na checagem de risco de hoje. Cada uma só vai para a conta de papel quando você clicar em Enviar.</p>
+    <div id="propostas"></div>
+    <div class="msg" id="msgProp" role="status"></div>
+  </section>
+
+  <section class="sec" id="blocoPosicoes" hidden>
+    <h2>Ações na carteira</h2>
+    <p class="ajuda">Preço com atraso de alguns minutos.</p>
+    <div id="posicoes"></div>
+  </section>
+
+  <section class="sec" id="blocoOrdens" hidden>
+    <h2>Últimas ordens</h2>
+    <div id="ordens"></div>
+  </section>
+
+  <p class="ajuda" style="margin-top:40px">Quer ver o que os grandes investidores compraram? Abra <a href="/investidores">Investidores</a>.</p>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const usd = v => Number(v ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "USD" });
+const pct = v => (v > 0 ? "+" : "") + Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + "%";
+const cls = v => v > 0 ? "alta" : v < 0 ? "queda" : "";
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const STATUS = { filled: "executada", partially_filled: "parcial", new: "aguardando", accepted: "aceita", canceled: "cancelada",
+  expired: "expirou", rejected: "recusada", pending_new: "enviando" };
+
+async function enviar(rota, metodo, corpo) {
+  const r = await fetch(rota, { method: metodo, headers: { "X-Painel": "sim", "Content-Type": "application/json" },
+    body: corpo ? JSON.stringify(corpo) : undefined });
+  const c = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(c.detail || "Não foi possível concluir.");
+  return c;
+}
+
+function desenhar(d) {
+  ["blocoConta", "blocoPosicoes", "blocoOrdens"].forEach(id => $(id).hidden = !d.conectada);
+  const ibkr = d.corretora === "ibkr", nome = esc(d.corretora_nome || "Alpaca"), secao = ibkr ? "ibkr" : "alpaca";
+  if (!d.conectada) {
+    $("conexao").innerHTML = `<div class="cartao">
+      <h2>${ibkr ? "Abra o IB Gateway na conta de papel" : "Conecte a conta de papel da Alpaca"}</h2>
+      ${d.erro ? `<p class="msg erro">${esc(d.erro)}</p>` : ""}
+      <p class="ajuda" style="margin-top:6px">${ibkr ? "O robô fala com o IB Gateway aberto e logado neste computador." : "As chaves da Alpaca são cadastradas em Configurações e ficam salvas só neste computador."}</p>
+      <a class="btn principal" style="display:inline-block;text-decoration:none" href="/conta#${secao}">Abrir Configurações</a></div>`;
+    return;
+  }
+
+  $("conexao").innerHTML = `<p class="conectada">${nome}, conta de papel (final <span class="num">${esc(d.final_chave)}</span>). <a href="/conta#${secao}">Gerenciar em Configurações</a></p>`;
+
+  // o que importa e o que voce pagou e quanto vale; o saldo ficticio da conta de papel fica de lado
+  const c = d.conta, dia = c.last_equity ? Number(c.equity) - Number(c.last_equity) : null;
+  const pago = d.posicoes.reduce((s, p) => s + Number(p.qty) * Number(p.avg_entry_price), 0);
+  const vale = d.posicoes.reduce((s, p) => s + Number(p.market_value), 0);
+  const ganho = vale - pago;
+  $("patrimonio").innerHTML = `<span class="${cls(ganho)}">${ganho >= 0 ? "+" : "−"}${usd(Math.abs(ganho))}</span>`;
+  $("frasePatrimonio").textContent = pago
+    ? `${ganho >= 0 ? "Ganho" : "Perda"} de ${pct(pago ? ganho / pago * 100 : 0)} sobre o que você pagou.`
+    : "Nenhuma ação comprada ainda.";
+  $("kpis").innerHTML = `<div><span>Você pagou</span><b>${usd(pago)}</b></div>
+    <div><span>Vale agora</span><b>${usd(vale)}</b></div>
+    <div><span>Hoje</span><b class="${cls(dia)}">${dia === null ? "-" : usd(dia)}</b></div>
+    <div><span>Saldo fictício parado</span><b class="suave">${usd(c.cash)}</b></div>`;
+
+  $("posicoes").innerHTML = d.posicoes.length ? `<div class="tabela"><table><thead><tr><th>Ação</th><th class="n">Quantidade</th><th class="n">Preço médio</th><th class="n">Preço agora</th><th class="n">Valor</th><th class="n">Resultado</th></tr></thead><tbody>
+    ${d.posicoes.map(p => `<tr><td class="moeda">${esc(p.symbol)}</td><td class="n num">${Number(p.qty).toLocaleString("pt-BR", { maximumFractionDigits: 4 })}</td><td class="n num">${usd(p.avg_entry_price)}</td><td class="n num">${usd(p.current_price)}</td><td class="n num">${usd(p.market_value)}</td><td class="n num ${cls(p.unrealized_pl)}">${usd(p.unrealized_pl)} (${pct(p.unrealized_plpc * 100)})</td></tr>`).join("")}
+    </tbody></table></div>` : `<div class="vazio">Nenhuma ação comprada ainda. A carteira de consenso monta a primeira carteira sozinha na próxima conferência com a bolsa aberta.</div>`;
+
+  $("ordens").innerHTML = d.ordens.length ? `<div class="tabela"><table><thead><tr><th>Quando</th><th>Ação</th><th>Tipo</th><th class="n">Valor/quantidade</th><th>Situação</th><th class="n">Preço</th></tr></thead><tbody>
+    ${d.ordens.map(o => `<tr><td class="num">${new Date(o.submitted_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</td><td class="moeda">${esc(o.symbol)}</td><td>${o.side === "buy" ? "compra" : "venda"}</td><td class="n num">${o.notional ? usd(o.notional) : esc(o.qty)}</td><td>${esc(STATUS[o.status] || o.status)}</td><td class="n num">${o.filled_avg_price ? usd(o.filled_avg_price) : "-"}</td></tr>`).join("")}
+    </tbody></table></div>` : `<div class="vazio">Nenhuma ordem ainda.</div>`;
+}
+
+const ESTADO = { pronta: "pronta para enviar", enviada: "enviada", sem_checagem: "falta a checagem de risco de hoje",
+  bloqueada: "bloqueada pela checagem de risco", avancada: "ordem avançada: só pelo chat" };
+
+async function carregarPropostas(conectada) {
+  $("blocoPropostas").hidden = !conectada;
+  if (!conectada) return;
+  const d = await (await fetch("/api/alpaca/propostas")).json();
+  if (!d.ordens.length) { $("propostas").innerHTML = `<div class="vazio">Nenhuma ordem proposta.</div>`; return; }
+  $("propostas").innerHTML = `<div class="tabela"><table><thead><tr><th>Ação</th><th>Tipo</th><th class="n">Valor</th><th>Situação</th><th></th></tr></thead><tbody>
+    ${d.ordens.map(p => `<tr><td class="moeda">${esc(p.ordem.symbol)}</td><td>${p.ordem.side === "buy" ? "compra" : "venda"}</td>
+      <td class="n num">${p.ordem.notional ? usd(p.ordem.notional) : esc(p.ordem.qty) + " ações"}</td>
+      <td class="quebra" style="min-width:220px">${esc(ESTADO[p.estado] || p.estado)}${p.risco.length ? ": " + esc(p.risco.join("; ")) : ""}</td>
+      <td>${p.estado === "pronta" ? `<button class="principal btn-tab" data-imp="${esc(p.impressao)}" data-txt="${esc(`${p.ordem.side === "buy" ? "Comprar" : "Vender"} ${p.ordem.notional ? usd(p.ordem.notional) : p.ordem.qty + " ações"} de ${p.ordem.symbol} na conta de PAPEL?`)}">Enviar</button>` : ""}</td></tr>`).join("")}
+    </tbody></table></div>`;
+  document.querySelectorAll("#propostas button[data-imp]").forEach(b => b.onclick = async () => {
+    if (!confirm(b.dataset.txt)) return;
+    b.disabled = true;
+    try { const r = await enviar("/api/alpaca/enviar", "POST", { impressao: b.dataset.imp }); $("msgProp").textContent = r.mensagem; $("msgProp").className = "msg"; }
+    catch (err) { $("msgProp").textContent = err.message; $("msgProp").className = "msg erro"; }
+    carregar();
+  });
+}
+
+async function carregar() {
+  try { const d = await (await fetch("/api/acoes")).json(); desenhar(d); await carregarPropostas(d.conectada && d.corretora !== "ibkr"); }
+  catch { $("conexao").innerHTML = `<div class="vazio">O painel não respondeu. Abra pelo ícone Robô de Trade.</div>`; }
+}
+carregar();
+setInterval(carregar, 30000);
+</script>
+</body>
+</html>

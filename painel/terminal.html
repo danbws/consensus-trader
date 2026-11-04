@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="/icone.png">
+<link rel="apple-touch-icon" href="/icone-180.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Robô">
+<meta name="theme-color" content="#0D1117">
+<title>Cripto | Robô de Trade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/estilo.css">
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js" integrity="sha384-OK7vELvjHdhUFi31JYioPIcRHTROLdcDa6ZsNWgvgLaKj+9JqhU0Ad8g4wz3CXjA" crossorigin="anonymous"></script>
+<style>
+  /* terminal: tela densa; tokens, botões e fontes vêm de /estilo.css */
+  html, body { height: 100%; }
+  body { overflow-x: hidden; }
+  .app { font-size: 13px; line-height: 1.4; }
+  button { min-height: 0; padding: 6px 12px; }
+  button[aria-pressed="true"] { background: var(--linha); }
+  .par:focus-visible, .pos:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+
+  .app { display: grid; height: calc(100dvh - var(--topo)); min-height: 620px;
+         grid-template: "topo topo topo" auto "lista grafico lado" 1fr "lista baixo lado" 210px / 230px minmax(0,1fr) 300px; }
+  .app > * { min-width: 0; min-height: 0; }
+
+  /* barra do topo */
+  .topo { grid-area: topo; display: flex; align-items: center; gap: 22px; padding: 8px 14px;
+          border-bottom: 1px solid var(--linha); flex-wrap: wrap; }
+  .marca { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .vivo { width: 8px; height: 8px; border-radius: 50%; background: var(--suave); }
+  .vivo[data-s="ok"] { background: var(--alta); } .vivo[data-s="pausa"] { background: var(--acento); } .vivo[data-s="off"] { background: var(--queda); }
+  .kpi { display: flex; flex-direction: column; }
+  .kpi span:first-child { color: var(--suave); font-size: 11px; }
+  .kpi b { font-family: var(--mono); font-weight: 500; font-size: 14px; }
+  .topo .acoes { margin-left: auto; display: flex; gap: 8px; }
+  .faixa { grid-column: 1 / -1; width: 100%; font-size: 12px; color: var(--acento); }
+  .faixa:empty { display: none; }
+
+  /* lista de moedas */
+  .lista { grid-area: lista; border-right: 1px solid var(--linha); overflow: auto; }
+  .cab { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px 6px; color: var(--suave); font-size: 11px; }
+  .par { display: grid; grid-template-columns: 1fr auto; padding: 7px 12px; cursor: pointer; border-left: 2px solid transparent; }
+  .par:hover { background: var(--painel); }
+  .par[aria-current="true"] { background: var(--painel); border-left-color: var(--acento); }
+  .par .nome { font-weight: 600; }
+  .par .preco { text-align: right; }
+  .par .var { grid-column: 2; text-align: right; font-size: 12px; }
+  .par .tag { font-size: 11px; color: var(--acento); }
+  .pisca-alta { animation: pa .8s; } .pisca-queda { animation: pq .8s; }
+  @keyframes pa { from { background: rgba(43,174,138,.18); } }
+  @keyframes pq { from { background: rgba(226,80,93,.18); } }
+
+  /* grafico */
+  .grafico { grid-area: grafico; display: flex; flex-direction: column; }
+  .info { display: flex; align-items: baseline; gap: 18px; padding: 8px 14px; border-bottom: 1px solid var(--linha); flex-wrap: wrap; }
+  .info .titulo { font-size: 18px; font-weight: 600; }
+  .info .ultimo { font-size: 18px; }
+  .info small { color: var(--suave); }
+  .tempos { margin-left: auto; display: flex; gap: 4px; }
+  .tempos button { padding: 3px 8px; font-weight: 500; }
+  .legenda { display: flex; gap: 14px; padding: 6px 14px 0; font-size: 11px; color: var(--suave); flex-wrap: wrap; }
+  .legenda i { display: inline-block; width: 12px; height: 2px; vertical-align: middle; margin-right: 5px; }
+  #velas { flex: 1; min-height: 200px; }
+  #rsi { height: 110px; border-top: 1px solid var(--linha); }
+
+  /* lado direito */
+  .lado { grid-area: lado; border-left: 1px solid var(--linha); overflow: auto; }
+  .bloco { padding: 4px 0 10px; border-bottom: 1px solid var(--linha); }
+  .bloco h2 { font-size: 12px; font-weight: 600; margin: 0; padding: 10px 12px 6px; }
+  .pos { padding: 8px 12px; cursor: pointer; }
+  .pos:hover { background: var(--painel); }
+  .pos .linha1, .pos .linha2 { display: flex; justify-content: space-between; }
+  .pos .linha2 { color: var(--suave); font-size: 12px; }
+  .regra { display: flex; justify-content: space-between; gap: 10px; padding: 5px 12px; }
+  .regra span:first-child { color: var(--suave); }
+  .vazio { padding: 8px 12px; color: var(--suave); background: none; border: 0; border-radius: 0; }
+
+  /* baixo: operacoes */
+  .baixo { grid-area: baixo; border-top: 1px solid var(--linha); overflow: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 5px 12px; text-align: left; white-space: nowrap; }
+  th { color: var(--suave); font-weight: 500; font-size: 11px; position: sticky; top: 0; background: var(--fundo); }
+  td.n, th.n { text-align: right; }
+  tbody tr { cursor: pointer; } tbody tr:hover { background: var(--painel); }
+
+
+  @media (max-width: 1100px) {
+    .app { grid-template: "topo topo" auto "lista grafico" 1fr "lado baixo" 260px / 200px minmax(0,1fr); }
+    .lado { border-left: 0; border-top: 1px solid var(--linha); border-right: 1px solid var(--linha); }
+  }
+  @media (max-width: 760px) {
+    .app { height: auto; min-height: 0; grid-template: "topo" auto "lista" auto "grafico" 520px "lado" auto "baixo" auto / 100%; }
+    .lista { border-right: 0; overflow-x: auto; border-bottom: 1px solid var(--linha); }
+    #pares { display: flex; }
+    .lista .cab { display: none; }
+    .par { min-width: 130px; border-left: 0; border-bottom: 2px solid transparent; }
+    .par[aria-current="true"] { border-bottom-color: var(--acento); }
+    .lado { border: 0; }
+    .topo .acoes { margin-left: 0; width: 100%; } .topo .acoes button { flex: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pisca-alta, .pisca-queda { animation: none; } }
+</style>
+</head>
+<body>
+<script src="/casca.js"></script>
+<div class="app">
+  <header class="topo">
+    <div class="marca"><span class="vivo" id="vivo"></span><span id="estado">Conectando</span></div>
+    <div class="kpi"><span>Saldo</span><b id="kSaldo">-</b></div>
+    <div class="kpi"><span>Resultado</span><b id="kResultado">-</b></div>
+    <div class="kpi"><span>Investido agora</span><b id="kInvestido">-</b></div>
+    <div class="kpi"><span>Pausa automática em</span><b id="kPiso">-</b></div>
+    <div class="kpi"><span>Fear &amp; Greed</span><b id="kFng">-</b></div>
+    <div class="acoes">
+      <button id="btPausar">Pausar compras</button>
+      <button id="btRetomar" class="principal" hidden>Retomar compras</button>
+      <button id="btVender" class="perigo">Vender tudo</button>
+    </div>
+    <div class="faixa" id="faixa"></div>
+  </header>
+
+  <nav class="lista" aria-label="Moedas observadas">
+    <div class="cab"><span>Moeda</span><span>Preço / 24 h</span></div>
+    <div id="pares"></div>
+  </nav>
+
+  <main class="grafico">
+    <div class="info">
+      <span class="titulo" id="titulo">-</span>
+      <span class="ultimo num" id="ultimo">-</span>
+      <span class="num" id="var24">-</span>
+      <small>Máx 24 h <span class="num" id="max24">-</span></small>
+      <small>Mín 24 h <span class="num" id="min24">-</span></small>
+      <small>Volume 24 h <span class="num" id="vol24">-</span></small>
+      <div class="tempos" id="tempos" role="group" aria-label="Tempo de cada vela"></div>
+    </div>
+    <div class="legenda" id="legenda"></div>
+    <div id="velas"></div>
+    <div id="rsi"></div>
+  </main>
+
+  <aside class="lado">
+    <div class="bloco"><h2 id="consultaTitulo">O robô compraria agora?</h2><div id="consulta"><div class="vazio">Consultando as regras...</div></div></div>
+    <div class="bloco"><h2>Posições abertas</h2><div id="posicoes"></div></div>
+    <div class="bloco"><h2>Segurança</h2><div id="seguranca"></div></div>
+  </aside>
+
+  <section class="baixo" aria-label="Operações fechadas">
+    <table>
+      <thead><tr><th>Moeda</th><th>Compra</th><th>Venda</th><th>Saída</th><th class="n">Preço compra</th><th class="n">Preço venda</th><th class="n">Investido</th><th class="n">Resultado</th></tr></thead>
+      <tbody id="ops"></tbody>
+    </table>
+  </section>
+
+</div>
+
+<dialog id="confirma"><b id="confTitulo"></b><p id="confTexto"></p>
+  <div class="acoes"><button id="confNao">Cancelar</button><button id="confSim" class="principal"></button></div></dialog>
+
+<script>
+const LW = LightweightCharts;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const compacto = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 });
+const pct = v => (v > 0 ? "+" : "") + Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
+const cls = v => v > 0 ? "alta" : v < 0 ? "queda" : "";
+const casas = p => p < 0.001 ? 8 : p < 1 ? 5 : p < 100 ? 3 : 2;
+const preco = p => Number(p).toLocaleString("pt-BR", { minimumFractionDigits: casas(p), maximumFractionDigits: casas(p) });
+const base = par => par.split("/")[0];
+const FUSO = -new Date().getTimezoneOffset() * 60;   // o grafico mostra a hora de Brasilia
+const loc = t => t + FUSO;
+const SEG = { "1m": 60, "5m": 300, "15m": 900, "1h": 3600, "4h": 14400, "1d": 86400 };
+const SAIDAS = { roi: "Alvo de lucro", stop_loss: "Stop", trailing_stop_loss: "Stop móvel", exit_signal: "Sinal de saída",
+  rsi_esticado: "Sinal de saída", force_exit: "Venda manual", emergency_exit: "Emergência" };
+
+let parAtual = new URLSearchParams(location.search).get("par") || "BTC/BRL";
+let tf = "15m", mercado = [], resumo = null, ws = null, wsLista = null, ultimoPreco = {};
+
+// ---------------------------------------------------------------- graficos
+const tema = {
+  layout: { background: { color: "#0D1117" }, textColor: "#7B8794", fontFamily: "Geist Mono, monospace", fontSize: 11 },
+  grid: { vertLines: { color: "#161D26" }, horzLines: { color: "#161D26" } },
+  rightPriceScale: { borderColor: "#1F2833", minimumWidth: 84 },
+  timeScale: { borderColor: "#1F2833", timeVisible: true, secondsVisible: false, fixLeftEdge: true,
+               lockVisibleTimeRangeOnResize: true, rightOffset: 4 },
+  crosshair: { mode: LW.CrosshairMode.Normal },
+  localization: { locale: "pt-BR" },
+};
+const chart = LW.createChart($("velas"), { ...tema, autoSize: true });
+const velas = chart.addCandlestickSeries({ upColor: "#2BAE8A", downColor: "#E2505D", borderVisible: false,
+  wickUpColor: "#2BAE8A", wickDownColor: "#E2505D" });
+const volume = chart.addHistogramSeries({ priceScaleId: "", priceFormat: { type: "volume" }, lastValueVisible: false, priceLineVisible: false });
+volume.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
+const linha = (cor, estilo) => chart.addLineSeries({ color: cor, lineWidth: 1.5, lineStyle: estilo ?? 0,
+  priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+const ema50 = linha("#E8A33D"), ema200 = linha("#8B6A3E"), bbInf = linha("#5C6B7A", 2);
+
+const chartRsi = LW.createChart($("rsi"), { ...tema, autoSize: true, timeScale: { ...tema.timeScale, visible: false } });
+const rsi = chartRsi.addLineSeries({ color: "#E8A33D", lineWidth: 1.5, priceLineVisible: false });
+rsi.createPriceLine({ price: 35, color: "#2BAE8A", lineStyle: 2, lineWidth: 1, axisLabelVisible: true, title: "compra" });
+rsi.createPriceLine({ price: 72, color: "#E2505D", lineStyle: 2, lineWidth: 1, axisLabelVisible: true, title: "venda" });
+chart.timeScale().subscribeVisibleLogicalRangeChange(r => r && chartRsi.timeScale().setVisibleLogicalRange(r));
+let linhasPreco = [];
+
+function legenda(temIndicadores) {
+  $("legenda").innerHTML = temIndicadores
+    ? `<span><i style="background:#E8A33D"></i>Média 50 (1 h)</span><span><i style="background:#8B6A3E"></i>Média 200 (1 h)</span>
+       <span><i style="background:#5C6B7A"></i>Banda de Bollinger inferior</span><span>Setas: compras e vendas do robô</span>
+       <span>Abaixo: RSI, compra quando sobe de 35 e vende acima de 72</span>`
+    : `<span>Os indicadores do robô aparecem no tempo de 15 min, que é o que ele usa para decidir.</span>`;
+}
+
+async function carregarGrafico() {
+  const dados = await (await fetch(`/api/candles?par=${encodeURIComponent(parAtual)}&tf=${tf}&limite=400`)).json();
+  if (!dados.velas) return;
+  const ult = dados.velas.at(-1)?.c || 1;
+  const formato = { type: "price", precision: casas(ult), minMove: 10 ** -casas(ult) };
+  velas.applyOptions({ priceFormat: formato }); [ema50, ema200, bbInf].forEach(s => s.applyOptions({ priceFormat: formato }));
+  velas.setData(dados.velas.map(v => ({ time: loc(v.t), open: v.o, high: v.h, low: v.l, close: v.c })));
+  volume.setData(dados.velas.map(v => ({ time: loc(v.t), value: v.v, color: v.c >= v.o ? "rgba(43,174,138,.35)" : "rgba(226,80,93,.35)" })));
+  const ind = dados.indicadores || {};
+  const serie = n => (ind[n] || []).map(p => ({ time: loc(p.t), value: p.v }));
+  ema50.setData(serie("ema50_1h")); ema200.setData(serie("ema200_1h")); bbInf.setData(serie("bb_inferior"));
+  rsi.setData(serie("rsi")); $("rsi").style.display = ind.rsi?.length ? "" : "none";
+  legenda(!!ind.rsi?.length);
+  desenharMarcas();
+  const n = dados.velas.length;
+  chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 150), to: n + 4 });
+  abrirSocket();
+}
+
+function desenharMarcas() {
+  if (!resumo) return;
+  const passo = SEG[tf], arred = t => loc(Math.floor(t / passo) * passo);
+  const ops = [...(resumo.operacoes || []), ...(resumo.abertas || [])].filter(t => t.pair === parAtual);
+  const vistos = new Set(), marcas = [];
+  for (const t of ops) {
+    if (vistos.has(t.trade_id)) continue; vistos.add(t.trade_id);
+    marcas.push({ time: arred(t.open_timestamp / 1000), position: "belowBar", color: "#E8A33D", shape: "arrowUp", text: "Compra" });
+    if (t.close_timestamp) marcas.push({ time: arred(t.close_timestamp / 1000), position: "aboveBar",
+      color: t.profit_abs >= 0 ? "#2BAE8A" : "#E2505D", shape: "arrowDown", text: pct(t.profit_pct) });
+  }
+  velas.setMarkers(marcas.sort((a, b) => a.time - b.time));
+  linhasPreco.forEach(l => velas.removePriceLine(l)); linhasPreco = [];
+  for (const t of (resumo.abertas || []).filter(t => t.pair === parAtual)) {
+    linhasPreco.push(velas.createPriceLine({ price: t.open_rate, color: "#E8A33D", lineWidth: 1, lineStyle: 2, title: "compra" }));
+    if (t.stop_loss_abs) linhasPreco.push(velas.createPriceLine({ price: t.stop_loss_abs, color: "#E2505D", lineWidth: 1, lineStyle: 2, title: "stop" }));
+  }
+}
+
+// preco ao vivo da vela atual (WebSocket publico da Binance)
+function abrirSocket() {
+  if (ws) ws.close();
+  const sim = parAtual.replace("/", "").toLowerCase();
+  ws = new WebSocket(`wss://stream.binance.com:9443/ws/${sim}@kline_${tf}`);
+  ws.onmessage = e => {
+    const k = JSON.parse(e.data).k;
+    const t = loc(k.t / 1000);
+    velas.update({ time: t, open: +k.o, high: +k.h, low: +k.l, close: +k.c });
+    volume.update({ time: t, value: +k.q, color: +k.c >= +k.o ? "rgba(43,174,138,.35)" : "rgba(226,80,93,.35)" });
+    mostrarUltimo(parAtual, +k.c);
+  };
+  ws.onclose = ev => { if (ev.target === ws) setTimeout(abrirSocket, 3000); };
+}
+
+// lista de moedas com preco ao vivo
+function abrirSocketLista() {
+  const streams = mercado.map(m => m.simbolo.toLowerCase() + "@miniTicker").join("/");
+  wsLista = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+  wsLista.onmessage = e => {
+    const t = JSON.parse(e.data).data, m = mercado.find(x => x.simbolo === t.s);
+    if (!m) return;
+    m.preco = +t.c; m.var_24h = (+t.c / +t.o - 1) * 100; m.max_24h = +t.h; m.min_24h = +t.l; m.volume_brl = +t.q;
+    mostrarUltimo(m.par, m.preco);
+  };
+  wsLista.onclose = () => setTimeout(abrirSocketLista, 5000);
+}
+
+function mostrarUltimo(par, p) {
+  const ant = ultimoPreco[par]; ultimoPreco[par] = p;
+  const el = document.querySelector(`.par[data-par="${CSS.escape(par)}"]`);
+  const m = mercado.find(x => x.par === par);
+  if (el && m) {
+    el.querySelector(".preco").textContent = preco(p);
+    const v = el.querySelector(".var"); v.textContent = pct(m.var_24h); v.className = "var num " + cls(m.var_24h);
+    if (ant && ant !== p) { el.classList.remove("pisca-alta", "pisca-queda"); void el.offsetWidth; el.classList.add(p > ant ? "pisca-alta" : "pisca-queda"); }
+  }
+  if (par === parAtual && m) {
+    $("ultimo").textContent = preco(p); $("ultimo").className = "ultimo num " + cls(ant ? p - ant : 0);
+    $("var24").textContent = pct(m.var_24h); $("var24").className = "num " + cls(m.var_24h);
+    $("max24").textContent = preco(m.max_24h); $("min24").textContent = preco(m.min_24h);
+    $("vol24").textContent = "R$ " + compacto.format(m.volume_brl);
+    document.title = `${base(par)} ${preco(p)} | Robô de Trade`;
+  }
+}
+
+function desenharLista() {
+  const abertos = new Set((resumo?.abertas || []).map(t => t.pair));
+  $("pares").innerHTML = mercado.map(m => `<div class="par" tabindex="0" data-par="${esc(m.par)}" aria-current="${m.par === parAtual}">
+      <span class="nome">${esc(base(m.par))}${abertos.has(m.par) ? ' <span class="tag">comprado</span>' : ""}</span>
+      <span class="preco num">${preco(m.preco)}</span><span class="var num ${cls(m.var_24h)}">${pct(m.var_24h)}</span></div>`).join("");
+  document.querySelectorAll(".par").forEach(el => {
+    const ir = () => trocarPar(el.dataset.par);
+    el.onclick = ir; el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ir(); } };
+  });
+}
+
+function trocarPar(par) {
+  if (!mercado.some(m => m.par === par)) return;
+  parAtual = par; history.replaceState(null, "", "?par=" + encodeURIComponent(par) + location.hash);
+  $("titulo").textContent = base(par) + " / BRL";
+  document.querySelectorAll(".par").forEach(el => el.setAttribute("aria-current", el.dataset.par === par));
+  const m = mercado.find(x => x.par === par); if (m) mostrarUltimo(par, m.preco);
+  carregarGrafico();
+  carregarConsulta();
+}
+
+async function carregarConsulta() {
+  const par = parAtual;
+  $("consultaTitulo").textContent = `O robô compraria ${base(par)} agora?`;
+  try {
+    const r = await (await fetch(`/api/consulta?par=${encodeURIComponent(par)}`)).json();
+    if (par !== parAtual || !r.regras) return;
+    $("consulta").innerHTML = `<div class="regra"><span>Pelas regras dele</span><b class="${r.compraria ? "alta" : "queda"}">${r.compraria ? "compraria" : "não compraria"}</b></div>`
+      + r.regras.map(x => `<div class="regra" title="${esc(x.detalhe)}"><span>${esc(x.regra)}</span><span class="${x.ok ? "alta" : "muted"}">${x.ok ? "sim" : "não"}</span></div>`).join("")
+      + `<div class="vazio" style="font-size:12px">${esc(r.aviso)} Passe o mouse numa regra para ver os números.</div>`;
+  } catch { $("consulta").innerHTML = `<div class="vazio">Consulta indisponível agora.</div>`; }
+}
+setInterval(carregarConsulta, 60000);
+
+// ---------------------------------------------------------------- dados do robo
+function desenharResumo(d) {
+  resumo = d;
+  const g = d.guarda || {}, inicial = g.saldo_inicial ?? d.saldo_inicial ?? 0, piso = g.saldo_minimo ?? d.saldo_minimo ?? 0;
+  const pat = g.patrimonio ?? d.saldo?.total ?? inicial, pausa = d.pausa_arquivo || g.pausa;
+  const travaGeral = (d.travas || []).find(t => t.active && t.pair === "*");
+  let s = "ok", txt = "Operando";
+  if (!d.robo_ligado) { s = "off"; txt = "Robô desligado"; }
+  else if (d.estado !== "running") { s = "off"; txt = "Robô parado"; }
+  else if (pausa) { s = "pausa"; txt = "Compras pausadas"; }
+  else if (travaGeral) { s = "pausa"; txt = "Travado por proteção"; }
+  $("vivo").dataset.s = s;
+  $("estado").textContent = txt + (d.dry_run ? " · saldo fictício" : d.robo_ligado ? " · DINHEIRO REAL" : "");
+  $("faixa").textContent = !d.robo_ligado ? "O robô não respondeu. Ligue o iniciar-robo.ps1. O gráfico continua ao vivo pela Binance."
+    : pausa ? pausa + " As moedas abertas continuam com alvo e stop."
+    : travaGeral ? `Proteção até ${new Date(travaGeral.lock_end_time).toLocaleString("pt-BR")}: ${travaGeral.reason}` : "";
+  $("btPausar").hidden = !!pausa; $("btRetomar").hidden = !pausa;
+  $("btPausar").disabled = $("btVender").disabled = !d.robo_ligado;
+
+  const dif = pat - inicial, investido = (d.abertas || []).reduce((s, t) => s + t.stake_amount, 0);
+  $("kSaldo").textContent = brl.format(pat);
+  $("kResultado").innerHTML = `<span class="${cls(dif)}">${brl.format(dif)} (${pct(inicial ? dif / inicial * 100 : 0)})</span>`;
+  $("kInvestido").textContent = brl.format(investido);
+  $("kPiso").textContent = brl.format(piso);
+  $("kFng").textContent = g.fear_greed == null ? "-" : `${g.fear_greed} de 100`;
+
+  const ab = d.abertas || [];
+  $("posicoes").innerHTML = ab.length ? ab.map(t => `<div class="pos" tabindex="0" data-par="${esc(t.pair)}">
+      <div class="linha1"><b>${esc(base(t.pair))}</b><span class="num ${cls(t.profit_abs)}">${brl.format(t.profit_abs)} (${pct(t.profit_pct)})</span></div>
+      <div class="linha2"><span>${brl.format(t.stake_amount)} a ${preco(t.open_rate)}</span><span class="num">stop ${t.stop_loss_abs ? preco(t.stop_loss_abs) : "-"}</span></div></div>`).join("")
+    : `<div class="vazio">Nenhuma moeda comprada. O saldo está todo em real, esperando um sinal.</div>`;
+  document.querySelectorAll(".pos").forEach(el => el.onclick = () => trocarPar(el.dataset.par));
+
+  const travasMoeda = (d.travas || []).filter(t => t.active && t.pair !== "*");
+  const regras = [
+    ["Piso de saldo", pat >= piso ? `<span class="alta">livre</span>` : `<span class="queda">disparado</span>`],
+    ["Stop por operação", d.stoploss ? pct(d.stoploss * 100) : "-"],
+    ["Operações ao mesmo tempo", `até ${d.max_operacoes ?? 2}`],
+    ["Trava geral", travaGeral ? `<span class="queda">ativa</span>` : `<span class="alta">livre</span>`],
+    ["Moedas de castigo", travasMoeda.length ? travasMoeda.map(t => esc(base(t.pair))).join(", ") : "nenhuma"],
+    ["Compra em euforia", g.fear_greed == null ? "-" : g.fear_greed >= (g.fng_max_entrada ?? 80) ? `<span class="queda">bloqueada</span>` : "liberada"],
+  ];
+  $("seguranca").innerHTML = regras.map(([n, v]) => `<div class="regra"><span>${n}</span><span class="num">${v}</span></div>`).join("");
+
+  const fech = (d.operacoes || []).filter(t => !t.is_open).reverse();
+  $("ops").innerHTML = fech.length ? fech.map(t => `<tr data-par="${esc(t.pair)}">
+      <td><b>${esc(base(t.pair))}</b></td><td>${new Date(t.open_timestamp).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</td>
+      <td>${new Date(t.close_timestamp).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</td>
+      <td>${esc(SAIDAS[t.exit_reason] || t.exit_reason)}</td><td class="n num">${preco(t.open_rate)}</td><td class="n num">${preco(t.close_rate)}</td>
+      <td class="n num">${brl.format(t.stake_amount)}</td><td class="n num ${cls(t.profit_abs)}">${brl.format(t.profit_abs)} (${pct(t.profit_pct)})</td></tr>`).join("")
+    : `<tr><td colspan="8" class="muted">Nenhuma operação fechada ainda. As compras e vendas aparecem aqui e como setas no gráfico.</td></tr>`;
+  document.querySelectorAll("#ops tr[data-par]").forEach(el => el.onclick = () => trocarPar(el.dataset.par));
+  desenharLista(); desenharMarcas();
+}
+
+async function atualizarResumo() {
+  try { desenharResumo(await (await fetch("/api/resumo")).json()); }
+  catch { $("vivo").dataset.s = "off"; $("estado").textContent = "Painel sem conexão"; }
+}
+
+// ---------------------------------------------------------------- acoes
+function confirmar(titulo, texto, botao) {
+  return new Promise(ok => {
+    $("confTitulo").textContent = titulo; $("confTexto").textContent = texto; $("confSim").textContent = botao;
+    const dlg = $("confirma"); dlg.showModal();
+    $("confSim").onclick = () => { dlg.close(); ok(true); }; $("confNao").onclick = () => { dlg.close(); ok(false); };
+  });
+}
+async function acao(rota) {
+  const r = await fetch(rota, { method: "POST", headers: { "X-Painel": "sim" } });
+  const c = await r.json().catch(() => ({}));
+  $("faixa").textContent = c.mensagem || c.detail || "Feito.";
+  setTimeout(atualizarResumo, 1500);
+}
+$("btPausar").onclick = async () => { if (await confirmar("Pausar compras?", "O robô para de comprar. As moedas abertas continuam com alvo e stop.", "Pausar compras")) acao("/api/pausar"); };
+$("btRetomar").onclick = () => acao("/api/retomar");
+$("btVender").onclick = async () => { if (await confirmar("Vender tudo?", "Vende agora todas as moedas abertas pelo preço do momento e pausa as compras até você retomar.", "Vender tudo")) acao("/api/vender-tudo"); };
+
+$("tempos").innerHTML = Object.keys(SEG).map(t => `<button data-tf="${t}" aria-pressed="${t === tf}">${t.replace("m", " min").replace("h", " h").replace("1d", "1 dia")}</button>`).join("");
+document.querySelectorAll("#tempos button").forEach(b => b.onclick = () => {
+  tf = b.dataset.tf; document.querySelectorAll("#tempos button").forEach(x => x.setAttribute("aria-pressed", x === b)); carregarGrafico();
+});
+
+(async function iniciar() {
+  try { mercado = await (await fetch("/api/mercado")).json(); } catch { mercado = []; }
+  if (!mercado.some(m => m.par === parAtual) && mercado.length) parAtual = mercado[0].par;
+  await atualizarResumo();
+  trocarPar(parAtual);
+  abrirSocketLista();
+  setInterval(atualizarResumo, 5000);
+})();
+</script>
+</body>
+</html>

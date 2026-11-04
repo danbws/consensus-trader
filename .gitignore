@@ -1,0 +1,36 @@
+# Lista do que entra no git: tudo fica de fora, menos o que esta liberado abaixo.
+# Chaves, bancos do robo, estado das carteiras e documentos pessoais nunca entram.
+/*
+!/.gitignore
+!/README.md
+!/README.pt-BR.md
+!/LICENSE
+!/requirements.txt
+!/abrir-robo.ps1
+!/iniciar-robo.ps1
+!/parar-robo.ps1
+!/painel/
+!/scripts/
+!/third_party/
+
+!/docs/
+/docs/*
+!/docs/aulas/
+!/docs/hipoteses-testadas.md
+!/docs/resultados-estrategias.md
+
+!/acoes-eua/
+/acoes-eua/*
+!/acoes-eua/trader/
+/acoes-eua/trader/*
+!/acoes-eua/trader/config.example.json
+
+!/user_data/
+/user_data/*
+!/user_data/config.example.json
+!/user_data/strategies/
+/user_data/strategies/*
+!/user_data/strategies/Robo*.py
+
+__pycache__/
+*.pyc

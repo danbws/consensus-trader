@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Configurações | Robô de Trade</title>
+<link rel="icon" href="/icone.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/estilo.css">
+<style>
+  .layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 28px; align-items: start; }
+  .sub { position: sticky; top: calc(var(--topo) + 20px); display: flex; flex-direction: column; gap: 2px; }
+  .sub a { padding: 8px 12px; border-radius: var(--raio-b); color: var(--suave); text-decoration: none; font-weight: 500; font-size: .92rem; border-left: 2px solid transparent; }
+  .sub a:hover { color: var(--tinta); background: var(--painel); }
+  .sub a[aria-current="true"] { color: var(--tinta); background: var(--painel-2); border-left-color: var(--acento); }
+  .blocos { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .bloco-conta { scroll-margin-top: calc(var(--topo) + 20px); }
+  .bloco-conta > p, .bloco-conta li { color: var(--suave); max-width: 64ch; }
+  .bloco-conta ol { padding-left: 20px; margin: 8px 0 0; }
+  .bloco-conta b { color: var(--tinta); }
+  .bloco-conta h3 { margin-top: 24px; font-size: 1rem; }
+  .modo { color: var(--tinta); margin: 0; max-width: 64ch; }
+  .saldo { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.8rem; font-weight: 500; margin: 6px 0 0; }
+  .divisor { border: 0; border-top: 1px solid var(--linha); margin: 24px 0 0; }
+  @media (max-width: 759px) {
+    .layout { grid-template-columns: 1fr; gap: 16px; }
+    .sub { position: sticky; top: var(--topo); z-index: 5; flex-direction: row; overflow-x: auto; background: var(--fundo);
+           margin: 0 -16px; padding: 8px 16px; border-bottom: 1px solid var(--linha); scrollbar-width: none; }
+    .sub::-webkit-scrollbar { display: none; }
+    .sub a { white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; border-radius: 0; padding: 6px 10px; }
+    .sub a[aria-current="true"] { border-bottom-color: var(--acento); background: transparent; }
+    .bloco-conta { scroll-margin-top: calc(var(--topo) + 64px); }
+  }
+</style>
+</head>
+<body>
+<script src="/casca.js"></script>
+<main class="pagina">
+  <header class="cab-pag">
+    <h1>Configurações</h1>
+    <p class="modo" id="modo">Carregando.</p>
+  </header>
+
+  <div class="layout">
+    <nav class="sub" id="sub" aria-label="Seções de configurações">
+      <a href="#binance">Binance (cripto)</a>
+      <a href="#alpaca">Alpaca (ações)</a>
+      <a href="#ibkr">Interactive Brokers</a>
+      <a href="#telegram">Telegram</a>
+      <a href="#senha">Senha do celular</a>
+      <a href="#real">Dinheiro real</a>
+    </nav>
+
+    <div class="blocos">
+      <section class="cartao bloco-conta" id="binance">
+        <h2>Binance (cripto)</h2>
+        <p>O robô usa uma <b>chave de API</b>: uma senha que deixa ele negociar, mas nunca sacar. Ela fica salva só neste computador.</p>
+        <ol>
+          <li>No app ou site da Binance: <b>Perfil &gt; Gerenciamento de API &gt; Criar API</b> (tipo "gerada pelo sistema").</li>
+          <li>Marque só <b>Ativar leitura</b> e <b>Permitir negociação spot e de margem</b>. <b>Nunca marque "Permitir saques".</b></li>
+          <li>Em restrição de IP, prefira <b>Restringir apenas a IPs confiáveis</b> e coloque o IP desta internet.</li>
+          <li>Copie a API Key e a Secret Key e cole abaixo. A Secret Key só aparece uma vez na Binance.</li>
+        </ol>
+        <div id="chaveAtual"></div>
+        <form id="formChave" autocomplete="off">
+          <label for="key">API Key</label>
+          <input id="key" type="text" spellcheck="false" autocomplete="off">
+          <label for="secret">Secret Key</label>
+          <input id="secret" type="password" spellcheck="false" autocomplete="new-password">
+          <div class="botoes"><button class="principal" type="submit" id="btChave">Conferir e salvar chave</button>
+            <button class="perigo" type="button" id="btApagar" hidden>Apagar chave</button></div>
+        </form>
+        <div class="msg" id="msgChave"></div>
+      </section>
+
+      <section class="cartao bloco-conta" id="alpaca">
+        <h2>Alpaca (ações, conta de papel)</h2>
+        <p>Conta de teste com dinheiro fictício. Só funciona chave de <b>papel</b>: chave de conta real é recusada. Elas ficam salvas só neste computador.</p>
+        <div id="alpEstado"></div>
+        <div id="alpPasso">
+          <ol>
+            <li>Entre em <b>app.alpaca.markets</b> e confira que está em <b>Paper</b> (canto superior esquerdo).</li>
+            <li>Na página inicial, em <b>API Keys</b>, gere as chaves e cole as duas abaixo.</li>
+            <li>Depois de conectar, apague o arquivo onde você guardou as chaves, principalmente se a pasta sincroniza com a nuvem.</li>
+          </ol>
+          <form id="formAlpaca" autocomplete="off">
+            <label for="alpKey">API Key ID</label>
+            <input id="alpKey" type="text" spellcheck="false" autocomplete="off">
+            <label for="alpSecret">Secret Key</label>
+            <input id="alpSecret" type="password" autocomplete="new-password">
+            <div class="botoes"><button class="principal" type="submit">Conectar conta de papel</button></div>
+          </form>
+        </div>
+        <div class="botoes" id="alpDesconectar" hidden><button class="perigo" type="button" id="btAlpacaDesconectar">Desconectar Alpaca</button></div>
+        <div class="msg" id="msgAlpaca" role="status"></div>
+      </section>
+
+      <section class="cartao bloco-conta" id="ibkr">
+        <h2>Interactive Brokers (ações, conta de papel)</h2>
+        <p>É a corretora do dinheiro real (planejamento, seção 3). Por enquanto o robô <b>só aceita a conta de papel</b> dela: login de conta real é recusado na hora. Nenhuma senha da IBKR passa pelo robô: você faz o login no próprio programa da IBKR.</p>
+        <div id="ibkrEstado"></div>
+        <ol>
+          <li>Instale o <b>IB Gateway</b> (versão "Stable", do site da Interactive Brokers) neste computador.</li>
+          <li>Abra, escolha <b>IB API</b> e <b>Paper Trading</b>, e entre com o seu usuário (a conta de papel aparece depois que a conta real é aprovada).</li>
+          <li>No Gateway: <b>Configure &gt; Settings &gt; API &gt; Settings</b>: marque <b>Enable ActiveX and Socket Clients</b>, desmarque <b>Read-Only API</b>, porta <b>4002</b>, e em <b>Trusted IPs</b> deixe só <b>127.0.0.1</b>.</li>
+          <li>Ligue o <b>Auto restart</b> (em Lock and Exit). Uma vez por semana a IBKR pede o login de novo, com o aviso no app IBKR Mobile.</li>
+          <li>Clique em <b>Conectar e usar a IBKR</b>. A carteira de consenso passa a ser montada lá, do zero, com US$ 1.000.</li>
+        </ol>
+        <form id="formIbkr" autocomplete="off">
+          <label for="ibkrPorta">Programa aberto</label>
+          <select id="ibkrPorta">
+            <option value="4002">IB Gateway, conta de papel (porta 4002)</option>
+            <option value="7497">TWS, conta de papel (porta 7497)</option>
+          </select>
+          <div class="botoes"><button class="principal" type="submit">Conectar e usar a IBKR</button>
+            <button type="button" id="btVoltarAlpaca" hidden>Voltar as ações para a Alpaca</button></div>
+        </form>
+        <div class="msg" id="msgIbkr" role="status"></div>
+        <h3>Dividendos para o relatório de imposto (Flex Query)</h3>
+        <p>As compras e vendas o robô grava sozinho. Os dividendos e o imposto retido nos EUA vêm de um relatório da IBKR:
+          no Portal do Cliente, <b>Desempenho e Relatórios &gt; Consultas Flex</b>, crie uma consulta de <b>Atividade</b> com a seção
+          <b>Transações em Dinheiro</b> (formato XML, data aaaaMMdd) e ative o <b>Serviço Web Flex</b> para gerar o token.</p>
+        <div id="flexEstado"></div>
+        <form id="formFlex" autocomplete="off">
+          <label for="flexToken">Token do Serviço Web Flex</label>
+          <input id="flexToken" type="password" autocomplete="new-password" spellcheck="false">
+          <label for="flexQuery">Número da consulta (Query ID)</label>
+          <input id="flexQuery" type="text" inputmode="numeric" autocomplete="off">
+          <div class="botoes"><button class="principal" type="submit">Salvar Flex Query</button>
+            <button class="perigo" type="button" id="btFlexApagar" hidden>Apagar Flex Query</button></div>
+        </form>
+        <div class="msg" id="msgFlex" role="status"></div>
+      </section>
+
+      <section class="cartao bloco-conta" id="telegram">
+        <h2>Telegram</h2>
+        <p>O robô manda cada compra, venda e trava para o seu Telegram, e você pode consultar e intervir por comando. Só a sua conversa é atendida: mensagem de qualquer outra pessoa é ignorada.</p>
+        <ol>
+          <li>No Telegram, procure <b>@BotFather</b> (com o selo azul de verificado) e mande <b>/newbot</b>.</li>
+          <li>Escolha um nome (ex.: Meu Robô de Trade) e um usuário terminado em <b>bot</b>.</li>
+          <li>O BotFather responde com um <b>código</b> (números, dois-pontos e letras). Ele é a senha do bot: não mande para ninguém.</li>
+          <li>Abra o seu bot novo e toque em <b>Iniciar</b> (ou mande <b>/start</b>).</li>
+          <li>Cole o código abaixo e clique em <b>Ligar Telegram</b>. Chega uma mensagem de teste no seu Telegram.</li>
+        </ol>
+        <div id="telegramEstado"></div>
+        <form id="formTelegram" autocomplete="off">
+          <label for="tgToken">Código do bot (do BotFather)</label>
+          <input id="tgToken" type="password" autocomplete="off" spellcheck="false">
+          <div class="botoes"><button class="principal" type="submit">Ligar Telegram</button>
+            <button class="perigo" type="button" id="btTelegramDesligar" hidden>Desligar Telegram</button></div>
+        </form>
+        <div class="msg" id="msgTelegram"></div>
+      </section>
+
+      <section class="cartao bloco-conta" id="senha">
+        <h2>Senha do celular</h2>
+        <p id="senhaEstado">Carregando.</p>
+        <p>É a senha que o celular pede para abrir o robô pelo Tailscale. No computador o painel continua abrindo sem senha. Use uma senha só para isto, com pelo menos 8 caracteres.</p>
+        <form id="formSenha" autocomplete="off">
+          <label for="s1">Nova senha</label>
+          <input id="s1" type="password" autocomplete="new-password" minlength="8" required>
+          <label for="s2">Repita a senha</label>
+          <input id="s2" type="password" autocomplete="new-password" minlength="8" required>
+          <div class="botoes"><button class="principal" type="submit">Salvar senha</button></div>
+          <div class="msg" id="msgSenha" role="status"></div>
+        </form>
+      </section>
+
+      <section class="cartao bloco-conta" id="real">
+        <h2 id="titulo">Dinheiro real</h2>
+        <h3 style="margin-top:12px">Coloque dinheiro na Binance</h3>
+        <p>O depósito é feito no app da Binance: <b>Comprar cripto ou Depositar &gt; Real (BRL) &gt; Pix</b>. O dinheiro cai na sua conta da Binance, não no robô. O robô só usa o valor que você liberar abaixo.</p>
+        <p id="saldoAjuda">Depois de salvar a chave, o saldo real aparece aqui.</p>
+        <p class="saldo" id="saldoReal"></p>
+
+        <hr class="divisor">
+        <h3>Ligue o robô com dinheiro real</h3>
+        <p>Só libera quando todas as travas abaixo estiverem verdes. É de propósito.</p>
+        <ul class="itens" id="travas"></ul>
+        <form id="formReal">
+          <label for="valor">Quanto o robô pode usar (R$)</label>
+          <input id="valor" type="number" min="30" step="1" inputmode="decimal">
+          <label class="check"><input type="checkbox" id="liAula"> Li a aula 5 e a aula 6 e entendi como o robô compra, vende e pausa.</label>
+          <label class="check"><input type="checkbox" id="aceito"> Aceito que posso perder todo o valor liberado.</label>
+          <label for="frase">Para confirmar, digite: <span id="fraseTxt" class="num"></span></label>
+          <input id="frase" type="text" autocomplete="off">
+          <div class="botoes"><button class="principal" type="submit" id="btReal">Ligar com dinheiro real</button></div>
+        </form>
+        <div class="botoes"><button type="button" id="btTeste" hidden>Voltar para o teste</button></div>
+        <div class="msg" id="msgReal"></div>
+      </section>
+    </div>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const item = (estado, texto) => `<li class="${estado}"><span>${estado === "ok" ? "✓" : estado === "nao" ? "✕" : "!"}</span><span>${texto}</span></li>`;
+let conta = null;
+
+async function enviar(rota, metodo, corpo) {
+  const r = await fetch(rota, { method: metodo, headers: { "X-Painel": "sim", "Content-Type": "application/json" },
+    body: corpo ? JSON.stringify(corpo) : undefined });
+  const c = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(c.detail || "Não foi possível concluir.");
+  return c;
+}
+function mensagem(id, texto, erro) { $(id).textContent = texto; $(id).className = "msg" + (erro ? " erro" : ""); }
+
+function desenhar(c) {
+  conta = c;
+  const real = c.modo === "real";
+  $("titulo").textContent = real ? "Dinheiro real: robô usando dinheiro real" : "Dinheiro real";
+  $("modo").innerHTML = real
+    ? `O robô está negociando com até <b class="num">${brl.format(c.valor_liberado)}</b> da sua conta na Binance.`
+    : `Agora o robô está em <b>teste, com saldo fictício</b>. O teste roda há <span class="num">${c.teste.dias.toLocaleString("pt-BR")}</span> dias, com <span class="num">${c.teste.operacoes}</span> operações fechadas e resultado de <span class="num">${brl.format(c.teste.resultado)}</span>.`;
+
+  const k = c.chave;
+  $("chaveAtual").innerHTML = k ? `<ul class="itens">
+      ${item(k.erro ? "nao" : "ok", k.erro ? esc(k.erro) : `Chave terminada em <b>${esc(k.final)}</b> funcionando`)}
+      ${k.erro ? "" : item(k.permite_saque ? "nao" : "ok", k.permite_saque ? "A chave permite saque. Desligue isso na Binance." : "Sem permissão de saque")}
+      ${k.erro ? "" : item(k.permite_trade ? "ok" : "nao", k.permite_trade ? "Pode negociar" : "Não pode negociar: marque a negociação spot na Binance")}
+      ${k.erro ? "" : item(k.ip_restrito ? "ok" : "atencao", k.ip_restrito ? "Restrita a IPs confiáveis" : "Sem restrição de IP. Funciona, mas é mais seguro restringir.")}
+    </ul>` : "";
+  $("btApagar").hidden = !k || real;
+  $("btChave").textContent = k ? "Trocar chave" : "Conferir e salvar chave";
+
+  if (k && !k.erro) {
+    $("saldoAjuda").textContent = "Saldo em real disponível na sua conta da Binance agora:";
+    $("saldoReal").textContent = brl.format(k.saldo_brl);
+  }
+
+  const valor = Number($("valor").value || 0);
+  const travas = [
+    [k && !k.erro && !k.permite_saque && k.permite_trade, "Chave conferida, que negocia e não saca"],
+    [c.teste.dias >= c.dias_minimos, `Teste rodando há pelo menos ${c.dias_minimos} dias (agora: ${c.teste.dias.toLocaleString("pt-BR")})`],
+    [k && !k.erro && k.saldo_brl >= c.valor_minimo, `Pelo menos ${brl.format(c.valor_minimo)} em real na Binance (a corretora exige R$ 10 por ordem)`],
+  ];
+  $("travas").innerHTML = travas.map(([ok, t]) => item(ok ? "ok" : "nao", t)).join("")
+    + (c.teste.resultado <= 0 && c.teste.operacoes ? item("atencao", "O resultado do teste está negativo. A aula 5 recomenda não usar dinheiro real assim.") : "");
+  $("fraseTxt").textContent = c.frase;
+  $("formReal").hidden = real; $("btTeste").hidden = !real;
+  $("btReal").disabled = !travas.every(([ok]) => ok);
+}
+
+async function carregar() {
+  try { desenhar(await (await fetch("/api/conta")).json()); }
+  catch { mensagem("msgChave", "O painel não respondeu. Abra o robô pelo ícone da área de trabalho.", true); }
+}
+
+$("formChave").onsubmit = async e => {
+  e.preventDefault();
+  $("btChave").disabled = true; mensagem("msgChave", "Conferindo com a Binance...");
+  try {
+    const r = await enviar("/api/conta/chave", "POST", { key: $("key").value, secret: $("secret").value });
+    $("key").value = $("secret").value = ""; mensagem("msgChave", r.mensagem); await carregar();
+  } catch (erro) { mensagem("msgChave", erro.message, true); }
+  $("btChave").disabled = false;
+};
+$("btApagar").onclick = async () => {
+  if (!confirm("Apagar a chave deste computador?")) return;
+  try { mensagem("msgChave", (await enviar("/api/conta/chave", "DELETE")).mensagem); await carregar(); }
+  catch (erro) { mensagem("msgChave", erro.message, true); }
+};
+$("formReal").onsubmit = async e => {
+  e.preventDefault();
+  try {
+    const r = await enviar("/api/conta/modo", "POST", { modo: "real", valor: Number($("valor").value),
+      li_aula: $("liAula").checked, aceito_perder: $("aceito").checked, frase: $("frase").value });
+    mensagem("msgReal", r.mensagem); await carregar();
+  } catch (erro) { mensagem("msgReal", erro.message, true); }
+};
+$("btTeste").onclick = async () => {
+  try { mensagem("msgReal", (await enviar("/api/conta/modo", "POST", { modo: "teste" })).mensagem); await carregar(); }
+  catch (erro) { mensagem("msgReal", erro.message, true); }
+};
+carregar();
+
+// ---------------------------------------------------------------- Alpaca (conta de papel)
+async function carregarAlpaca() {
+  try {
+    const d = await (await fetch("/api/alpaca")).json();
+    $("alpEstado").innerHTML = d.conectada
+      ? `<ul class="itens">${item("ok", `Conectada (chave terminada em <b>${esc(d.final_chave)}</b>)`)}</ul>`
+      : (d.erro ? `<p class="msg erro">${esc(d.erro)}</p>` : "");
+    $("alpPasso").hidden = !!d.conectada;
+    $("alpDesconectar").hidden = !d.conectada;
+  } catch { mensagem("msgAlpaca", "O painel não respondeu agora.", true); }
+}
+$("formAlpaca").onsubmit = async e => {
+  e.preventDefault();
+  mensagem("msgAlpaca", "Conferindo com a Alpaca...");
+  try {
+    const r = await enviar("/api/alpaca/chave", "POST", { key: $("alpKey").value, secret: $("alpSecret").value });
+    $("alpKey").value = $("alpSecret").value = ""; mensagem("msgAlpaca", r.mensagem); carregarAlpaca();
+  } catch (erro) { mensagem("msgAlpaca", erro.message, true); }
+};
+$("btAlpacaDesconectar").onclick = async () => {
+  if (!confirm("Apagar as chaves da Alpaca deste computador?")) return;
+  try { await enviar("/api/alpaca/chave", "DELETE"); mensagem("msgAlpaca", "Alpaca desconectada."); carregarAlpaca(); }
+  catch (erro) { mensagem("msgAlpaca", erro.message, true); }
+};
+carregarAlpaca();
+
+// ---------------------------------------------------------------- Interactive Brokers (conta de papel)
+async function carregarIbkr() {
+  try {
+    const c = await (await fetch("/api/corretora")).json();
+    const usa = c.acoes === "ibkr";
+    $("ibkrEstado").innerHTML = `<ul class="itens">${usa
+      ? item("ok", `As ações estão na <b>IBKR</b> (porta ${esc(c.ibkr.porta)})`)
+      : item("info", "As ações estão na <b>Alpaca</b>. A IBKR ainda não está em uso.")}</ul>`;
+    $("ibkrPorta").value = String(c.ibkr.porta);
+    $("btVoltarAlpaca").hidden = !usa;
+    $("flexEstado").innerHTML = c.flex ? `<ul class="itens">${item("ok", "Flex Query salvo")}</ul>` : "";
+    $("btFlexApagar").hidden = !c.flex;
+  } catch { mensagem("msgIbkr", "O painel não respondeu agora.", true); }
+}
+$("formIbkr").onsubmit = async e => {
+  e.preventDefault();
+  mensagem("msgIbkr", "Procurando o programa da IBKR neste computador...");
+  try { mensagem("msgIbkr", (await enviar("/api/corretora", "POST", { acoes: "ibkr", porta: Number($("ibkrPorta").value) })).mensagem); carregarIbkr(); }
+  catch (erro) { mensagem("msgIbkr", erro.message, true); }
+};
+$("btVoltarAlpaca").onclick = async () => {
+  if (!confirm("Voltar as ações para a conta de papel da Alpaca? A carteira na IBKR fica como está.")) return;
+  try { mensagem("msgIbkr", (await enviar("/api/corretora", "POST", { acoes: "alpaca" })).mensagem); carregarIbkr(); }
+  catch (erro) { mensagem("msgIbkr", erro.message, true); }
+};
+$("formFlex").onsubmit = async e => {
+  e.preventDefault();
+  try {
+    const r = await enviar("/api/ibkr/flex", "POST", { token: $("flexToken").value, query: $("flexQuery").value });
+    $("flexToken").value = $("flexQuery").value = ""; mensagem("msgFlex", r.mensagem); carregarIbkr();
+  } catch (erro) { mensagem("msgFlex", erro.message, true); }
+};
+$("btFlexApagar").onclick = async () => {
+  if (!confirm("Apagar o token do Flex Query deste computador?")) return;
+  try { mensagem("msgFlex", (await enviar("/api/ibkr/flex", "DELETE")).mensagem); carregarIbkr(); }
+  catch (erro) { mensagem("msgFlex", erro.message, true); }
+};
+carregarIbkr();
+
+// ---------------------------------------------------------------- Telegram
+async function carregarTelegram() {
+  try {
+    const t = await (await fetch("/api/telegram")).json();
+    $("telegramEstado").innerHTML = t.ligado
+      ? `<ul class="itens">${item("ok", `Ligado no bot <b>@${esc(t.bot || "")}</b>`)}</ul>` : "";
+    $("btTelegramDesligar").hidden = !t.ligado;
+  } catch {}
+}
+$("formTelegram").onsubmit = async e => {
+  e.preventDefault();
+  mensagem("msgTelegram", "Conferindo com o Telegram...");
+  try {
+    const r = await enviar("/api/telegram", "POST", { token: $("tgToken").value });
+    $("tgToken").value = ""; mensagem("msgTelegram", r.mensagem); carregarTelegram();
+  } catch (erro) { mensagem("msgTelegram", erro.message, true); }
+};
+$("btTelegramDesligar").onclick = async () => {
+  if (!confirm("Desligar o Telegram e apagar o código deste computador?")) return;
+  try { mensagem("msgTelegram", (await enviar("/api/telegram", "DELETE")).mensagem); carregarTelegram(); }
+  catch (erro) { mensagem("msgTelegram", erro.message, true); }
+};
+carregarTelegram();
+
+// ---------------------------------------------------------------- senha do celular
+fetch("/api/senha").then(r => r.json()).then(d => {
+  $("senhaEstado").textContent = d.tem_senha ? "Já existe uma senha. Salvar uma nova troca a senha e desconecta os celulares." : "Ainda não há senha: o celular não consegue entrar até você criar uma.";
+}).catch(() => { $("senhaEstado").textContent = "Não foi possível ler o estado da senha agora."; });
+$("formSenha").onsubmit = async e => {
+  e.preventDefault();
+  if ($("s1").value !== $("s2").value) { mensagem("msgSenha", "As duas senhas não são iguais.", true); return; }
+  const r = await fetch("/api/senha", { method: "POST", headers: { "X-Painel": "sim", "Content-Type": "application/json" }, body: JSON.stringify({ senha: $("s1").value }) });
+  const c = await r.json().catch(() => ({}));
+  mensagem("msgSenha", c.mensagem || c.detail || "Não foi possível salvar.", !r.ok);
+  if (r.ok) { $("s1").value = $("s2").value = ""; $("senhaEstado").textContent = "Senha salva."; }
+};
+
+// ---------------------------------------------------------------- navegação lateral
+const links = [...document.querySelectorAll("#sub a")];
+function marcar(id) { links.forEach(a => a.setAttribute("aria-current", a.getAttribute("href") === "#" + id)); }
+marcar(location.hash.slice(1) || "binance");
+if ("IntersectionObserver" in window) {
+  const vis = new Map();
+  const obs = new IntersectionObserver(es => {
+    es.forEach(e => vis.set(e.target.id, e.isIntersecting ? e.intersectionRatio : 0));
+    const topo = [...vis.entries()].filter(([, r]) => r > 0).map(([id]) => id);
+    if (topo.length) marcar(topo[0]);
+  }, { rootMargin: "-80px 0px -55% 0px", threshold: [0, 0.1] });
+  document.querySelectorAll(".bloco-conta").forEach(s => { vis.set(s.id, 0); obs.observe(s); });
+}
+links.forEach(a => a.addEventListener("click", () => marcar(a.getAttribute("href").slice(1))));
+</script>
+</body>
+</html>

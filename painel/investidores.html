@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Investidores | Robô de Trade</title>
+<link rel="icon" href="/icone.png">
+<link rel="apple-touch-icon" href="/icone-180.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0D1117">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/estilo.css">
+<style>
+  .novidade + .novidade { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--linha); }
+  .mudanca { margin-top: 4px; font-size: .9rem; }
+  .mudanca .rot { color: var(--suave); }
+  .nota { color: var(--alerta); font-size: .85rem; }
+  .data-sub { color: var(--suave); font-size: .85rem; }
+</style>
+</head>
+<body>
+<script src="/casca.js"></script>
+<main class="pagina">
+  <header class="cab-pag">
+    <h1>Investidores</h1>
+    <p class="ajuda">Os grandes fundos entregam a carteira à SEC uma vez por trimestre. O painel confere a cada 6 horas. Isto é estudo, não recomendação de compra.</p>
+  </header>
+
+  <section class="sec" style="margin-top:0">
+    <h2>Novidades</h2>
+    <div id="novidades"><div class="vazio">Buscando.</div></div>
+  </section>
+
+  <section class="sec">
+    <h2>Investidores que acompanhamos</h2>
+    <p class="ajuda">Cada fundo grande entrega a carteira até 45 dias depois do fim do trimestre.</p>
+    <div id="investidores"></div>
+  </section>
+
+  <section class="sec">
+    <h2>Carteira de referência</h2>
+    <p class="ajuda" id="refFonte">A carteira de referência de um investidor (acoes-eua/trader/targets.json). É estudo, não recomendação.</p>
+    <div id="referencia"></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const pct = v => (v > 0 ? "+" : "") + Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + "%";
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const dataBr = s => s ? new Date(s + "T12:00").toLocaleDateString("pt-BR") : "-";
+
+function listaMudancas(m) {
+  if (!m) return "";
+  return Object.entries(m).filter(([, t]) => t && t.length)
+    .map(([rotulo, t]) => `<div class="mudanca"><span class="rot">${esc(rotulo)}:</span> ${t.map(esc).join(", ")}</div>`).join("");
+}
+
+async function carregarInvestidores() {
+  let d;
+  try { d = await (await fetch("/api/investidores")).json(); }
+  catch { $("novidades").innerHTML = `<div class="vazio">O painel não respondeu agora.</div>`; return; }
+  $("novidades").innerHTML = d.novidades.length ? `<div class="cartao">
+    ${d.novidades.slice(0, 5).map(n => `<div class="novidade"><b>${esc(n.nome)}</b> entregou o trimestre de <span class="num">${dataBr(n.trimestre)}</span> em <span class="num">${dataBr(n.entregue_em)}</span>${listaMudancas(n.mudancas)}</div>`).join("")}</div>`
+    : `<div class="vazio">Nenhuma novidade desde a última conferência.</div>`;
+  $("investidores").innerHTML = d.investidores.length ? `<div class="tabela"><table><thead><tr><th>Investidor</th><th>Último trimestre</th><th>O que mudou nele</th></tr></thead><tbody>
+    ${d.investidores.map(i => `<tr><td class="quebra"><b>${esc(i.nome)}</b>${i.aviso ? `<div class="nota">${esc(i.aviso)}</div>` : ""}</td>
+      <td><span class="num">${dataBr(i.periodo)}</span><div class="data-sub">entregue <span class="num">${dataBr(i.entregue_em)}</span></div></td>
+      <td class="quebra" style="min-width:260px">${listaMudancas(i.mudancas) || "-"}</td></tr>`).join("")}
+    </tbody></table></div>` : `<div class="vazio">O vigia ainda não rodou. A primeira conferência acontece 1 minuto depois de o painel ligar.</div>`;
+}
+
+async function carregarReferencia() {
+  let d;
+  try { d = await (await fetch("/api/acoes")).json(); }
+  catch { $("referencia").innerHTML = `<div class="vazio">O painel não respondeu agora.</div>`; return; }
+  const ref = d.referencia;
+  $("refFonte").textContent = ref ? `Fonte: ${ref.source}. É estudo, não recomendação.` : "Nenhuma carteira de referência ainda (acoes-eua/trader/targets.json).";
+  $("referencia").innerHTML = ref ? `<div class="tabela"><table><thead><tr><th>Ação</th><th>Empresa</th><th class="n">Peso na cópia</th><th class="n">% na carteira original</th></tr></thead><tbody>
+    ${ref.weights.map(w => `<tr><td class="moeda">${esc(w.ticker)}</td><td>${esc(w.name)}</td><td class="n num">${pct(w.weight).replace("+", "")}</td><td class="n num">${pct(w.pct_of_13f).replace("+", "")}</td></tr>`).join("")}
+    </tbody></table></div>` : "";
+}
+
+carregarInvestidores();
+carregarReferencia();
+setInterval(() => { carregarInvestidores(); carregarReferencia(); }, 60000);
+</script>
+</body>
+</html>
