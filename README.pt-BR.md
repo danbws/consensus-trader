@@ -40,6 +40,7 @@ O caderno completo está em [docs/hipoteses-testadas.md](docs/hipoteses-testadas
 | `scripts/relatorio_imposto.py` | Relatório anual para o contador: cada venda em reais pelo dólar PTAX, custo pelo PEPS, dividendos |
 | `scripts/historico.py` | Valor diário por tipo de investimento, para o painel mostrar o ganho de qualquer período |
 | `scripts/estudo_etf_btc*.py` | O estudo dos fluxos dos ETFs de bitcoin |
+| `scripts/estudo_saida_queda.py` | Tirar na queda e colocar depois: 20 regras de saída sobre a carteira de consenso |
 | `scripts/estudo_cot.py` | O estudo do relatório COT da CFTC (S&P 500, ouro, prata, títulos, euro) |
 | `user_data/strategies/` | As estratégias do Freqtrade que foram testadas (`RoboSaidas.py` é a que está ligada) |
 | `painel/` | Painel em FastAPI (gráficos, ganhos, configurações) e o bot do Telegram |

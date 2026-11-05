@@ -105,3 +105,15 @@ Sem olhar o futuro: posição de terça só vale a partir da segunda seguinte. N
 - Seguir os especuladores (tendência) foi um pouco melhor que seguir os comerciais (13 contra 3 de 45), mas pelo mesmo motivo do caixa.
 
 **Veredito:** o COT não dá vantagem nos ativos que interessam (ações e ouro). Onde parece funcionar, é o caixa rendendo enquanto o ativo caía. Não entra no robô. Um painel que vende nota a partir do COT precisaria mostrar um resultado medido melhor que este para valer a assinatura.
+
+## Ações EUA: tirar quando cai e colocar depois (05/11, scripts/estudo_saida_queda.py)
+
+Pergunta: a carteira de consenso caiu 2,4% num dia (ganho de R$ 305 para R$ 169). Sair nas quedas e voltar depois rende mais que ficar parado?
+Base: a carteira de consenso diária de 2018 a 2026 (custo 0,2%). Por cima dela, 20 regras: sair depois de um dia de queda de 1,5%, 2% ou 3% e voltar em 5, 10 ou 20 pregões; sair a 5, 10, 15 ou 20% abaixo do topo e voltar acima da média de 20 ou 50 dias; ficar só acima da média de 50, 100 ou 200 dias. Decisão no fechamento, vale no dia seguinte; 0,2% por saída ou volta; fora do mercado rende como título curto.
+
+- **Depois de um dia de queda de 2% ou mais (128 vezes), a carteira subiu em média 2,0% nos 20 pregões seguintes, mais que num dia qualquer (1,3%).** Depois de quedas de 3% (47 vezes), subiu 2,6%. Os dias de alta forte costumam vir logo depois dos de queda; quem sai perde justamente eles.
+- **Nenhuma das 20 regras ganha de ficar parado nos dois períodos** (parado: 15,3% e 15,4% ao ano). As que saem rápido (queda de 1,5% ou 5% do topo) rendem entre −7% e +6% ao ano.
+- A melhor de 2018-2021 (sair depois de queda de 3%, voltar em 10 pregões) rende 13,6% em 2022-2026, contra 15,4% parado, e perde para 64% dos sorteios.
+- Algumas regras diminuem a queda máxima (média de 200 dias: −17% contra −27%), mas pagam com 2 a 10 pontos a menos por ano.
+
+**Veredito:** para esta carteira, tirar na queda e colocar depois custa dinheiro. A regra continua: não vende porque caiu; só avisa em −20%, −30% e −40%.

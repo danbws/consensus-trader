@@ -40,6 +40,7 @@ The full log, in Portuguese, is in [docs/hipoteses-testadas.md](docs/hipoteses-t
 | `scripts/relatorio_imposto.py` | Yearly report for a Brazilian accountant: every sale in BRL at the central bank rate (PTAX), FIFO cost, dividends |
 | `scripts/historico.py` | Daily value per asset type, so the panel can show gains for any period |
 | `scripts/estudo_etf_btc*.py` | The bitcoin ETF flow study |
+| `scripts/estudo_saida_queda.py` | Selling on drops and buying back: 20 exit rules over the consensus portfolio |
 | `scripts/estudo_cot.py` | The CFTC Commitments of Traders study (S&P 500, gold, silver, bonds, euro) |
 | `user_data/strategies/` | The Freqtrade strategies that were tested (`RoboSaidas.py` is the one running) |
 | `painel/` | FastAPI panel (charts, gains, settings) and the Telegram bot |
