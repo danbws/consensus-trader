@@ -198,7 +198,7 @@ class BotTelegram:
             linhas += ["", "🇺🇸 <b>Ações EUA</b> (conta de papel)",
                        f"Pago {usd(pago)} · vale agora {usd(vale)}",
                        f"Resultado {usd(vale - pago)} ({pct((vale / pago - 1) * 100 if pago else 0)}) · hoje {usd(dia)}"]
-        linhas += ["", f"<i>{datetime.now():%d/%m %H:%M}</i>"]
+        linhas += ["", f"🕒 Atualizado em {datetime.now():%d/%m/%Y às %H:%M}"]
         return "\n".join(linhas), self.rodape("resumo")
 
     def tela_cripto(self):
@@ -301,7 +301,8 @@ class BotTelegram:
             for x in g["tipos"]:
                 valor = brl(x["ganho"]) if x["moeda"] == "BRL" else f"{usd(x['ganho'])} ≈ {brl(x['ganho_brl'])}"
                 linhas.append(f"   {'🪙' if x['tipo'] == 'cripto' else '🇺🇸'} {e(x['nome'].split(' (')[0])}: {valor} ({pct(x['ganho_pct'])})")
-        linhas += ["", "<i>O valor em reais das ações inclui a variação do dólar. Datas à sua escolha: painel, Visão geral.</i>"]
+        linhas += ["", "<i>O valor em reais das ações inclui a variação do dólar. Datas à sua escolha: painel, Visão geral.</i>",
+                   "", f"🕒 Atualizado em {datetime.now():%d/%m/%Y às %H:%M}"]
         return "\n".join(linhas), self.rodape("ganhos")
 
     def tela_investidores(self):
