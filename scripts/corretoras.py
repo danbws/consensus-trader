@@ -116,6 +116,16 @@ class Alpaca:
                 break
         return {"acao": simbolo, "lado": "venda", "valor": round(p["market_value"], 2) if p else 0.0}
 
+    def vender_valor(self, simbolo: str, valor: float) -> dict:
+        """Vende parte da posicao, em dolares (fracao): usado para devolver a acao ao peso igual."""
+        self._req("POST", "/orders", json={"symbol": simbolo, "side": "sell", "notional": f"{valor:.2f}",
+                                           "type": "market", "time_in_force": "day"})
+        for _ in range(30):  # espera executar, para o dinheiro estar livre antes das compras
+            time.sleep(2)
+            if not any(o["symbol"] == simbolo and o["side"] == "sell" for o in self._req("GET", "/orders", params={"status": "open"})):
+                break
+        return {"acao": simbolo, "lado": "venda", "valor": round(valor, 2)}
+
     def comprar_valor(self, simbolo: str, valor: float) -> dict:
         self._req("POST", "/orders", json={"symbol": simbolo, "side": "buy", "notional": f"{valor:.2f}",
                                            "type": "market", "time_in_force": "day"})
@@ -315,6 +325,27 @@ class Ibkr:
         if trade.orderStatus.status != "Filled":
             raise RuntimeError(f"Venda de {simbolo} não executou ({trade.orderStatus.status}): {' | '.join(erros)[:300]}")
         return {"acao": simbolo, "lado": "venda", "valor": round(valor, 2)}
+
+    def vender_valor(self, simbolo: str, valor: float) -> dict:
+        """Vende parte da posicao (o valor em dolares, nunca mais do que tem); sem fracao na API, acoes inteiras."""
+        p = next((x for x in self.posicoes() if x["symbol"] == simbolo), None)
+        if not p:
+            return {"acao": simbolo, "lado": "venda", "valor": 0.0}
+        preco = self.preco(simbolo)
+        qtd = min(quantidade_fracionada(valor, preco), float(p["qty"]))
+        trade, erros = self._executar(simbolo, "SELL", qtd) if qtd > 0 else (None, [])
+        aviso = None
+        if trade is not None and trade.orderStatus.status != "Filled" and recusou_fracao(erros):
+            inteiras = min(math.floor(valor / preco), math.floor(float(p["qty"])))
+            aviso = f"{simbolo}: a IBKR recusou fração; vendi {inteiras} ação(ões) inteira(s)."
+            trade, erros = self._executar(simbolo, "SELL", inteiras) if inteiras else (None, [])
+        if trade is None:
+            return {"acao": simbolo, "lado": "venda", "valor": 0.0,
+                    "aviso": aviso or f"{simbolo}: ajuste de US$ {valor:.2f} pequeno demais para vender."}
+        _, recebido = self._gravar(simbolo, trade)
+        if trade.orderStatus.status != "Filled":
+            raise RuntimeError(f"Venda de {simbolo} não executou ({trade.orderStatus.status}): {' | '.join(erros)[:300]}")
+        return {"acao": simbolo, "lado": "venda", "valor": round(recebido, 2), **({"aviso": aviso} if aviso else {})}
 
     def comprar_valor(self, simbolo: str, valor: float) -> dict:
         preco = self.preco(simbolo)

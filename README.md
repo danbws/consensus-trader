@@ -76,7 +76,7 @@ Edit both files. In `user_data\config.json`, change the `api_server` user, passw
 
 This starts the bot and the panel in the background and opens <http://127.0.0.1:8090>. Under **Configurações** you connect the Alpaca paper keys, Telegram and, later, the IB Gateway. `parar-robo.ps1` stops everything.
 
-The tests need no broker: `scripts\teste_corretoras.py`, `teste_queda.py` and `teste_acesso.py`.
+The tests need no broker: `scripts\teste_corretoras.py`, `teste_pesos.py`, `teste_queda.py` and `teste_acesso.py`.
 
 ## Not financial advice
 

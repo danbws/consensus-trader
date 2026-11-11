@@ -76,7 +76,7 @@ Edite os dois arquivos. No `user_data\config.json`, troque usuário, senha e seg
 
 Isso liga o robô e o painel escondidos e abre <http://127.0.0.1:8090>. Em **Configurações** você conecta as chaves de papel da Alpaca, o Telegram e, depois, o IB Gateway. O `parar-robo.ps1` desliga tudo.
 
-Os testes não precisam de corretora: `scripts\teste_corretoras.py`, `teste_queda.py` e `teste_acesso.py`.
+Os testes não precisam de corretora: `scripts\teste_corretoras.py`, `teste_pesos.py`, `teste_queda.py` e `teste_acesso.py`.
 
 ## Não é recomendação de investimento
 

@@ -173,6 +173,20 @@ try:
 except RuntimeError:
     conferir("Flex com DOCTYPE/ENTITY recusado", True)
 
+# ---- venda parcial (volta ao peso igual)
+ib3 = IBFalso()
+k3 = cr.Ibkr(ib=ib3, arq_execucoes=pasta / "execs3.json")
+v3 = k3.vender_valor("BRK.B", 80.0)
+conferir("venda parcial: US$ 80 a US$ 400 = 0,2 acao", ib3.ordens[-1] == ("BRK B", "SELL", 0.2) and v3["valor"] == 80.0)
+k3.vender_valor("BRK.B", 900.0)
+conferir("venda parcial nunca vende mais do que a posicao", ib3.ordens[-1] == ("BRK B", "SELL", 0.5))
+ib4 = IBFalso(aceita_fracao=False)
+ib4.carteira[0].position = 3
+k4 = cr.Ibkr(ib=ib4, arq_execucoes=pasta / "execs4.json")
+v4 = k4.vender_valor("BRK.B", 900.0)
+conferir("sem fracao na API: venda parcial em acoes inteiras e avisa", ib4.ordens[-1] == ("BRK B", "SELL", 2) and "inteira" in v4.get("aviso", ""))
+conferir("venda parcial de acao que nao tem: nada", k3.vender_valor("MSFT", 50.0)["valor"] == 0.0)
+
 # ---- escolha da corretora
 conferir("sem arquivo de configuracao: Alpaca", cr.config()["acoes"] in ("alpaca", "ibkr"))
 conferir("estado do consenso separado por corretora",
