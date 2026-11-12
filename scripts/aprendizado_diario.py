@@ -35,6 +35,7 @@ FILA_INICIAL = [
 ]
 ENVIAR = "--sem-telegram" not in sys.argv
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 
 def ler(arq: Path, padrao):
@@ -193,6 +194,19 @@ def main():
                       f"(diferença {c['diferenca']:+.2f} pontos; normal até ±{c['normal_ate']:.2f}). {explica}")
     estado["alerta"] = lado
 
+    # duas listas lado a lado (16 x 37 gestores), simuladas: avisa quando alguma lista troca e no relatorio de sabado
+    listas = None
+    try:
+        import listas_lado_a_lado as ll
+        listas = ll.atualizar()
+        registro["lado_a_lado"] = listas["placar"]
+        if any(t["saiu"] for t in listas["trocas"].values()) or not estado.get("lado_a_lado_avisado"):
+            linhas.append(ll.texto(listas))
+            estado["lado_a_lado_avisado"] = True
+            listas = None  # ja entrou na mensagem de hoje
+    except Exception as erro:
+        registro["lado_a_lado_erro"] = str(erro)
+
     semanal = "--semanal" in sys.argv or (hoje.weekday() == 5 and estado.get("ultima_semanal") != str(hoje))
     if semanal:
         e = proximo_estudo()
@@ -202,6 +216,8 @@ def main():
             linhas.append(f"🔬 <b>Estudo da semana</b>: {e['nome']}\n{e['texto']}")
         else:
             linhas.append(f"🔬 Estudo da semana: {e['texto']}")
+        if listas:
+            linhas.append(ll.texto(listas))
         if "dias" in c:
             linhas.append(f"📊 Consenso desde o início: {c['carteira']:+.2f}% | S&P 500: {c['sp500']:+.2f}% "
                           f"({c['dias']} pregões; diferença dentro do normal: {'sim' if c['ok'] else 'não'})")

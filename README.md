@@ -47,6 +47,7 @@ The full log, in Portuguese, is in [docs/hipoteses-testadas.md](docs/hipoteses-t
 | `scripts/estudo_fatia_btc.py` | A fixed bitcoin slice inside the consensus portfolio, rebalanced every 3 months |
 | `scripts/estudo_mais_gestores.py` | Consensus with 37 managers instead of 16: a small gain, with selection bias |
 | `scripts/aprendizado_diario.py` | Daily learning routine: checks the paper portfolio against the study, runs one queued study a week and re-checks the edge every month. It never changes the rule by itself |
+| `scripts/listas_lado_a_lado.py` | Two simulated portfolios side by side from 12/11/2026: today's 16-manager list and the 37-manager candidate (no orders) |
 | `scripts/simula_aportes.py` | Monthly contributions and compounding scenarios for the consensus portfolio |
 | `user_data/strategies/` | The Freqtrade strategies that were tested (`RoboSaidas.py` is the one running) |
 | `painel/` | FastAPI panel (charts, gains, settings) and the Telegram bot |
