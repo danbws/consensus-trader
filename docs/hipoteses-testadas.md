@@ -167,3 +167,27 @@ Base: a carteira de consenso diária de 2018 a 2026 e o BTC/USDT diário da Bina
 - É um único ativo num período em que ele multiplicou de valor; o teste não diz se isso se repete. Diferente das regras de trade, aqui não há o que "escolher" no passado, mas há a aposta de que o bitcoin continue subindo mais que as ações.
 
 **Veredito:** uma fatia pequena, com volta ao peso a cada 3 meses, foi a única forma de bitcoin que melhorou a carteira nestes testes, ao custo de quedas um pouco maiores. Fica como opção de decisão do Daniel, não como regra do robô; não muda a conclusão de que o robô de trade de cripto não tem vantagem.
+
+## Ações EUA: consenso com mais gestores, 16 -> 37 (12/11, scripts/estudo_mais_gestores.py)
+
+Pergunta: com mais gestores na lista, a contagem do consenso depende menos de poucos nomes. Rende mais?
+Base: os 16 gestores de hoje + 21 conhecidos por carteiras concentradas e de longo prazo (Fundsmith, Duquesne, TCI, Brave Warrior, Giverny, Fairfax, Weitz, Davis, Fairholme, Southeastern, Valley Forge, Trian, Polen, Dorsey, Altarock, Icahn, Ruane Cunniff, Yacktman, Wedgewood, Semper Augustus, Cantillon). 1.384 relatórios 13F. Mesma regra (top 10, corte 3%, troca no dia 16, custo 0,2%). Os 13F novos ficam à parte (user_data/estudo_mais_gestores); a lista do robô não mudou.
+
+| Versão | 2018-2021 | 2022-2026 | Pior queda 2022-2026 |
+|---|---|---|---|
+| S&P 500 | 14,9% ao ano | 13,8% | −22,1% |
+| **16 gestores, 2+ (a regra de hoje)** | **15,3%** | **15,3%** | −27,0% |
+| 37 gestores, 3+ | 19,8% | 15,8% | −29,3% |
+| 37 gestores, 4+ | 20,0% | 17,4% | −28,7% |
+| 37 gestores, 3+, top 8 | 18,8% | 18,5% | −30,2% |
+| 37 gestores, 3+, top 12 | 19,1% | 13,8% | −28,3% |
+| 37 gestores, 3+, corte 5% | 19,3% | 16,1% | −31,6% |
+| Só os 21 novos | 18,9% | 13,6% | −29,3% |
+
+- 5 das 6 versões com 37 gestores ganham da regra de hoje nos dois períodos. A melhora é grande em 2018-2021 (+4 a +5 pontos) e pequena em 2022-2026 (+0,5 a +3 pontos; top 12 perde).
+- Tirando um gestor novo de cada vez (37 gestores, 3+), 2022-2026 fica entre 14,7% e 17,1%: em 18 de 21 casos acima da regra de hoje. A melhora não depende de um nome só.
+- Os 21 novos sozinhos não ganham do S&P em 2022-2026: o que ajuda é a contagem maior, não os nomes novos.
+- Só 4 de 390 escolhas ficaram sem preço.
+- **Viés:** os 21 foram escolhidos hoje, entre gestores que ficaram famosos. O mesmo vale para os 16 originais, mas aqui a escolha foi feita depois de ver 2018-2026. Parte da melhora pode vir disso.
+
+**Veredito:** candidata a mudança (37 gestores, 3 ou mais), com melhora pequena e viés de escolha. Não muda o robô sem o OK do Daniel; se aprovar, vale acompanhar as duas listas lado a lado por alguns trimestres antes de trocar.

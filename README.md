@@ -45,6 +45,7 @@ The full log, in Portuguese, is in [docs/hipoteses-testadas.md](docs/hipoteses-t
 | `scripts/estudo_insiders.py` | Insider cluster buys (SEC Form 4, 2016-2026): no edge over the S&P 500 |
 | `scripts/estudo_compras_gestores.py` | Following what the managers bought in the quarter instead of what they hold: worse than the consensus |
 | `scripts/estudo_fatia_btc.py` | A fixed bitcoin slice inside the consensus portfolio, rebalanced every 3 months |
+| `scripts/estudo_mais_gestores.py` | Consensus with 37 managers instead of 16: a small gain, with selection bias |
 | `scripts/aprendizado_diario.py` | Daily learning routine: checks the paper portfolio against the study, runs one queued study a week and re-checks the edge every month. It never changes the rule by itself |
 | `scripts/simula_aportes.py` | Monthly contributions and compounding scenarios for the consensus portfolio |
 | `user_data/strategies/` | The Freqtrade strategies that were tested (`RoboSaidas.py` is the one running) |

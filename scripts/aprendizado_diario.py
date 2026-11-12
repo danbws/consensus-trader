@@ -30,7 +30,7 @@ FILA = PASTA / "fila.json"
 FIM_ESTUDO = "2026-10-29"
 DESVIO_PADRAO = 0.08  # diferenca anual tipica consenso x S&P, ate o 1o calculo mensal
 FILA_INICIAL = [
-    {"id": "mais_gestores", "nome": "Mais gestores na lista do consenso (16 -> 30)",
+    {"id": "mais_gestores", "nome": "Mais gestores na lista do consenso (16 -> 37)",
      "script": "scripts/estudo_mais_gestores.py"},
 ]
 ENVIAR = "--sem-telegram" not in sys.argv

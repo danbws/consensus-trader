@@ -45,6 +45,7 @@ O caderno completo está em [docs/hipoteses-testadas.md](docs/hipoteses-testadas
 | `scripts/estudo_insiders.py` | Compras em grupo dos diretores (formulário 4 da SEC, 2016-2026): sem vantagem sobre o S&P 500 |
 | `scripts/estudo_compras_gestores.py` | Seguir o que os gestores compraram no trimestre em vez do que eles têm: pior que o consenso |
 | `scripts/estudo_fatia_btc.py` | Uma fatia fixa de bitcoin dentro da carteira de consenso, voltando ao peso a cada 3 meses |
+| `scripts/estudo_mais_gestores.py` | Consenso com 37 gestores em vez de 16: melhora pequena, com viés de escolha |
 | `scripts/aprendizado_diario.py` | Rotina de aprendizado: confere todo dia a carteira de papel contra o estudo, roda um estudo da fila por semana e reconfere a vantagem todo mês. Nunca muda a regra sozinha |
 | `scripts/simula_aportes.py` | Aportes mensais e juros compostos: cenários para a carteira de consenso |
 | `user_data/strategies/` | As estratégias do Freqtrade que foram testadas (`RoboSaidas.py` é a que está ligada) |
