@@ -44,6 +44,7 @@ O caderno completo está em [docs/hipoteses-testadas.md](docs/hipoteses-testadas
 | `scripts/estudo_cot.py` | O estudo do relatório COT da CFTC (S&P 500, ouro, prata, títulos, euro) |
 | `scripts/estudo_insiders.py` | Compras em grupo dos diretores (formulário 4 da SEC, 2016-2026): sem vantagem sobre o S&P 500 |
 | `scripts/estudo_compras_gestores.py` | Seguir o que os gestores compraram no trimestre em vez do que eles têm: pior que o consenso |
+| `scripts/estudo_fatia_btc.py` | Uma fatia fixa de bitcoin dentro da carteira de consenso, voltando ao peso a cada 3 meses |
 | `scripts/simula_aportes.py` | Aportes mensais e juros compostos: cenários para a carteira de consenso |
 | `user_data/strategies/` | As estratégias do Freqtrade que foram testadas (`RoboSaidas.py` é a que está ligada) |
 | `painel/` | Painel em FastAPI (gráficos, ganhos, configurações) e o bot do Telegram |

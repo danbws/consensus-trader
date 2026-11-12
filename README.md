@@ -44,6 +44,7 @@ The full log, in Portuguese, is in [docs/hipoteses-testadas.md](docs/hipoteses-t
 | `scripts/estudo_cot.py` | The CFTC Commitments of Traders study (S&P 500, gold, silver, bonds, euro) |
 | `scripts/estudo_insiders.py` | Insider cluster buys (SEC Form 4, 2016-2026): no edge over the S&P 500 |
 | `scripts/estudo_compras_gestores.py` | Following what the managers bought in the quarter instead of what they hold: worse than the consensus |
+| `scripts/estudo_fatia_btc.py` | A fixed bitcoin slice inside the consensus portfolio, rebalanced every 3 months |
 | `scripts/simula_aportes.py` | Monthly contributions and compounding scenarios for the consensus portfolio |
 | `user_data/strategies/` | The Freqtrade strategies that were tested (`RoboSaidas.py` is the one running) |
 | `painel/` | FastAPI panel (charts, gains, settings) and the Telegram bot |

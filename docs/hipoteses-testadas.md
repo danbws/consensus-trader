@@ -148,3 +148,22 @@ Base: os mesmos 16 gestores e 596 relatórios 13F do consenso. O 13F guardado tr
 - Pôr na frente do consenso as ações que algum gestor aumentou ganha do S&P nos dois períodos, mas não do consenso simples em 2022-2026 (15,0% contra 15,3%). A melhora de 2018-2021 não se repete fora da amostra.
 
 **Veredito:** o consenso continua como está. Seguir as compras do trimestre não entra no robô.
+
+## Ações EUA + uma fatia fixa de bitcoin (12/11, scripts/estudo_fatia_btc.py)
+
+Pergunta: uma fatia fixa de bitcoin dentro da carteira de consenso, só comprada e mantida (sem robô de trade), melhora o resultado? Quanto aumenta as quedas?
+Base: a carteira de consenso diária de 2018 a 2026 e o BTC/USDT diário da Binance. Fatias de 0%, 2,5%, 5%, 10% e 20%, voltando ao peso a cada 3 meses ou nunca. Custo de 0,2% sobre o que se troca.
+
+| Fatia de BTC (volta ao peso a cada 3 meses) | 2018-2021 | 2022-2026 | Pior queda 2022-2026 |
+|---|---|---|---|
+| 0% (a regra de hoje) | 15,3% ao ano | 15,3% | −27,0% |
+| 2,5% | 17,3% | 15,7% | −28,0% |
+| 5% | 19,2% | 16,0% | −29,1% |
+| 10% | 22,8% | 16,6% | −31,1% |
+| 20% | 29,2% | 17,5% | −35,2% |
+
+- Com a volta ao peso a cada 3 meses, toda fatia rendeu mais nos dois períodos e em quase todas as janelas de 3 anos. Sem a volta ao peso, a fatia cresce sozinha e em 2022-2026 rende menos que 0% de BTC, com quedas maiores (até −42%).
+- O ganho vem quase todo de 2019, 2020, 2023 e 2024, anos em que o bitcoin subiu de 86% a 315%. Em 2025 e 2026 a fatia tirou rendimento (o bitcoin caiu 10% e 13%).
+- É um único ativo num período em que ele multiplicou de valor; o teste não diz se isso se repete. Diferente das regras de trade, aqui não há o que "escolher" no passado, mas há a aposta de que o bitcoin continue subindo mais que as ações.
+
+**Veredito:** uma fatia pequena, com volta ao peso a cada 3 meses, foi a única forma de bitcoin que melhorou a carteira nestes testes, ao custo de quedas um pouco maiores. Fica como opção de decisão do Daniel, não como regra do robô; não muda a conclusão de que o robô de trade de cripto não tem vantagem.
