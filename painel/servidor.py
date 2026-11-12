@@ -718,6 +718,24 @@ def _vigia_em_segundo_plano():
 
     threading.Thread(target=historico_horario, daemon=True, name="historico").start()
 
+    def aprendizado():
+        """Rotina de aprendizado (scripts/aprendizado_diario.py): 1x por dia, depois das 19h (bolsa dos EUA fechada).
+        So estuda e avisa; nao muda a regra do robo."""
+        time.sleep(300)
+        while True:
+            estado = _ler_json(USER_DATA / "aprendizado" / "estado.json") or {}
+            if time.localtime().tm_hour >= 19 and estado.get("ultimo_dia") != time.strftime("%Y-%m-%d"):
+                try:
+                    r = subprocess.run([sys.executable, str(RAIZ / "scripts" / "aprendizado_diario.py")], cwd=RAIZ,
+                                       capture_output=True, timeout=4 * 3600, encoding="utf-8", errors="replace")
+                    (USER_DATA / "logs" / "aprendizado.log").open("a", encoding="utf-8").write(
+                        f"\n== {time.strftime('%d/%m %H:%M')}\n" + (r.stdout or "")[-1500:] + (r.stderr or "")[-800:])
+                except Exception:
+                    pass
+            time.sleep(1800)
+
+    threading.Thread(target=aprendizado, daemon=True, name="aprendizado").start()
+
 
 @app.post("/api/alpaca/chave")
 def salvar_alpaca(corpo: dict, x_painel: str | None = Header(default=None)):
