@@ -117,3 +117,16 @@ Base: a carteira de consenso diária de 2018 a 2026 (custo 0,2%). Por cima dela,
 - Algumas regras diminuem a queda máxima (média de 200 dias: −17% contra −27%), mas pagam com 2 a 10 pontos a menos por ano.
 
 **Veredito:** para esta carteira, tirar na queda e colocar depois custa dinheiro. A regra continua: não vende porque caiu; só avisa em −20%, −30% e −40%.
+
+## Ações EUA: compras em grupo dos diretores (12/11, scripts/estudo_insiders.py)
+
+Pergunta: quando vários diretores ou executivos de uma empresa compram ações dela com o próprio dinheiro em poucos dias, a ação sobe mais que o mercado nos meses seguintes?
+Base: formulários 4 da SEC de 2016 a 2026 (110.877 compras a mercado de diretores e executivos, 6.510 empresas; fundo que é só "dono de 10%" fica de fora). O sinal só vale a partir da entrega do formulário que completa o grupo; entrada no fechamento do pregão seguinte; custo 0,2%. Grupo de 2, 3 ou 4 diretores em até 30 dias, somando US$ 100 mil ou US$ 500 mil; segurar 21, 63 ou 126 pregões (18 versões). 93% dos sinais têm preço na Alpaca.
+
+- **Nenhuma das 18 versões ganha do S&P 500 nos dois períodos** (S&P: 18,3% ao ano em 2017-2021 e 11,6% em 2022-2026). Em 2022-2026 as carteiras rendem de 0,6% a 6,4% ao ano, com quedas de 31% a 39%.
+- Por sinal, a ação sobe mais que o S&P em só 43% a 45% das vezes; o resultado mediano é 2 a 3 pontos abaixo do índice em 3 meses, nos dois períodos.
+- A melhor de 2017-2021 (4 diretores, US$ 500 mil, 3 meses: +2,5 pontos por sinal) vira −1,2 ponto em 2022-2026.
+- O efeito que estudos antigos encontraram (com dados dos anos 80 e 90) não aparece nestes 10 anos; a informação fica pública no dia da entrega do formulário.
+- Vieses: empresa que quebrou ou trocou de código pode não ter preço (7% dos sinais), o que deixaria o resultado ainda pior.
+
+**Veredito:** seguir as compras dos diretores não dá vantagem e piora a queda. Não entra no robô.

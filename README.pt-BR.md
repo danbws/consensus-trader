@@ -42,6 +42,8 @@ O caderno completo está em [docs/hipoteses-testadas.md](docs/hipoteses-testadas
 | `scripts/estudo_etf_btc*.py` | O estudo dos fluxos dos ETFs de bitcoin |
 | `scripts/estudo_saida_queda.py` | Tirar na queda e colocar depois: 20 regras de saída sobre a carteira de consenso |
 | `scripts/estudo_cot.py` | O estudo do relatório COT da CFTC (S&P 500, ouro, prata, títulos, euro) |
+| `scripts/estudo_insiders.py` | Compras em grupo dos diretores (formulário 4 da SEC, 2016-2026): sem vantagem sobre o S&P 500 |
+| `scripts/simula_aportes.py` | Aportes mensais e juros compostos: cenários para a carteira de consenso |
 | `user_data/strategies/` | As estratégias do Freqtrade que foram testadas (`RoboSaidas.py` é a que está ligada) |
 | `painel/` | Painel em FastAPI (gráficos, ganhos, configurações) e o bot do Telegram |
 | `third_party/edgar13f/` | Leitor de 13F da SEC, de Jake Schincariol, licença MIT |
