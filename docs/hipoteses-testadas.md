@@ -130,3 +130,21 @@ Base: formulários 4 da SEC de 2016 a 2026 (110.877 compras a mercado de diretor
 - Vieses: empresa que quebrou ou trocou de código pode não ter preço (7% dos sinais), o que deixaria o resultado ainda pior.
 
 **Veredito:** seguir as compras dos diretores não dá vantagem e piora a queda. Não entra no robô.
+
+## Ações EUA: seguir o que os gestores compraram no trimestre (12/11, scripts/estudo_compras_gestores.py)
+
+Pergunta: em vez de seguir o que os gestores já têm (o consenso), seguir o que eles acabaram de comprar ou aumentar rende mais?
+Base: os mesmos 16 gestores e 596 relatórios 13F do consenso. O 13F guardado traz o peso de cada ação, não a quantidade: "nova" é a empresa que não estava no relatório anterior e entrou com peso de 2%, 3% ou 5%; "aumento" é o peso subir 1, 2 ou 3 pontos. Sempre 10 ações em partes iguais, troca no dia 16 depois do prazo do 13F, custo 0,2%. 14 versões.
+
+| Versão | 2018-2021 | 2022-2026 |
+|---|---|---|
+| S&P 500 | 14,9% ao ano | 13,8% ao ano |
+| Consenso (a regra de hoje) | 15,0% | 15,3% |
+| Só as posições novas (6 versões) | −7,8% a 12,6% | −5,7% a 12,6% |
+| Só os aumentos (6 versões) | −11,8% a 11,5% | −0,5% a 11,2% |
+| Consenso, com as que algum gestor aumentou na frente (2 versões) | 15,4% e 16,9% | 15,0% e 15,0% |
+
+- **Seguir só as compras do trimestre perde do S&P e do consenso** nas 12 versões, com quedas de até 78%.
+- Pôr na frente do consenso as ações que algum gestor aumentou ganha do S&P nos dois períodos, mas não do consenso simples em 2022-2026 (15,0% contra 15,3%). A melhora de 2018-2021 não se repete fora da amostra.
+
+**Veredito:** o consenso continua como está. Seguir as compras do trimestre não entra no robô.
