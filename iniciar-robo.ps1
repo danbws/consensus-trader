@@ -5,7 +5,9 @@
 
 $ErrorActionPreference = "Continue"
 Set-Location $PSScriptRoot
-$freqtrade = Join-Path $PSScriptRoot ".venv\Scripts\freqtrade.exe"
+# Chama pelo python.exe: desde 13/11/2026 o Smart App Control do Windows bloqueia o freqtrade.exe
+# (lancador sem assinatura); o python.exe da venv e liberado.
+$python = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
 New-Item -ItemType Directory -Force (Join-Path $PSScriptRoot "user_data\logs") | Out-Null
 
 # modo.json: teste (padrao) ou dinheiro real. Quem troca e a tela Conta do painel.
@@ -17,7 +19,7 @@ if (-not (Test-Path $telegram)) { [IO.File]::WriteAllText($telegram, '{"telegram
 
 while ($true) {
     Write-Host "$(Get-Date -Format 'dd/MM HH:mm:ss')  ligando o robo..."
-    & $freqtrade trade --config user_data/config.json --config user_data/modo.json --config user_data/telegram.json --logfile user_data/logs/robo.log
+    & $python -m freqtrade trade --config user_data/config.json --config user_data/modo.json --config user_data/telegram.json --logfile user_data/logs/robo.log
     Write-Host "$(Get-Date -Format 'dd/MM HH:mm:ss')  robo parou; religando em 30 s (Ctrl+C para sair)"
     Start-Sleep -Seconds 30
 }
