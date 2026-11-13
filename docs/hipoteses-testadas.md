@@ -257,3 +257,24 @@ Base: carteiras com a leitura corrigida dos 13F; GVIP e SPY com preço ajustado 
 - Os três andam juntos (correlação diária de 0,85 a 0,86 com o GVIP): a diferença está em poucas ações.
 
 **Veredito:** o resultado do GVIP reforça a cautela. Quando a ideia do consenso é aplicada sem escolher a dedo quais gestores seguir, ela não bate o S&P. A vantagem dos nossos consensos sobre o GVIP pode vir justamente da escolha dos gestores feita hoje (viés de escolha). Nada muda no robô; o GVIP passa a ser a régua de comparação junto com o S&P.
+
+## Ações EUA: consenso contra o Nasdaq (QQQ) e as 10 maiores do S&P (13/11, scripts/estudo_qqq_top10.py)
+
+Pergunta: o consenso é só "big tech com outro nome"? As listas quase sempre têm GOOGL, AMZN, META, MSFT, TSM e V.
+Top 10: as 10 maiores do S&P por valor de mercado na virada de cada ano (ranking publicado; aproximado nas últimas posições), em partes iguais, trocando nas mesmas datas do consenso, custo 0,2%.
+
+| Versão | 2018-2021 | 2022-2026 | Pior queda 2022-2026 |
+|---|---|---|---|
+| S&P 500 | 14,9% ao ano | 13,8% | −22,1% |
+| QQQ (Nasdaq 100) | 22,1% | 16,8% | −29,4% |
+| Top 10 S&P, partes iguais | 19,6% | 17,1% | −34,3% |
+| 16 gestores, 2+ (a regra de hoje) | 18,3% | 13,0% | −28,9% |
+| 37 gestores, 3+ (candidata) | 18,0% | 15,5% | −29,5% |
+
+- O top 10 e o QQQ rendem mais que os dois consensos nos dois períodos, sem 13F e sem escolher gestor.
+- Não depende do número exato: top 3, 5, 8 e 10 dão 16,0% a 17,6% em 2022-2026. Usando a lista do ano anterior (sem saber o ranking novo), 16,7% e 18,9%.
+- Em janelas de 1 ano, os consensos rendem mais que o top 10 em 44% das vezes e mais que o QQQ em 38% a 43%.
+- Correlação diária de 0,90 a 0,92 com top 10, QQQ e S&P: o consenso é, na prática, uma carteira de grandes empresas de tecnologia com algumas trocas, e as trocas custaram retorno.
+- Custo do top 10: concentração e quedas maiores (−34,3% em 2022-2026, contra −22,1% do S&P).
+
+**Veredito:** o consenso dos 13F não acrescentou nada sobre a regra simples "as maiores empresas em partes iguais" nem sobre o QQQ. Isso também tira o sentido do estudo de escolher gestores por regra: ele só poderia sair pior que o consenso escolhido hoje, que já perde para o top 10. Nada muda no robô sem o Daniel decidir; a régua de comparação passa a ser o QQQ e o top 10, além do S&P e do GVIP.

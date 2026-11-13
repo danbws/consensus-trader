@@ -51,6 +51,7 @@ The full log, in Portuguese, is in [docs/hipoteses-testadas.md](docs/hipoteses-t
 | `scripts/estudo_sobrevivencia.py` | Survivorship bias and 13F positions with no ticker: small bias, but the missing tickers hid big holdings (BAC, BN) |
 | `scripts/tickers_13f.py` | Fills 13F tickers the filing tool misses (OpenFIGI by CUSIP, then by name); used by the robot and the studies |
 | `scripts/estudo_gvip.py` | Consensus vs GVIP (Goldman Sachs hedge fund VIP ETF): GVIP did not beat the S&P; ours beat GVIP, possibly from manager selection bias |
+| `scripts/estudo_qqq_top10.py` | Consensus vs QQQ and the 10 largest S&P stocks in equal weight: both beat the consensus in both periods |
 | `scripts/simula_aportes.py` | Monthly contributions and compounding scenarios for the consensus portfolio |
 | `user_data/strategies/` | The Freqtrade strategies that were tested (`RoboSaidas.py` is the one running) |
 | `painel/` | FastAPI panel (charts, gains, settings) and the Telegram bot |
