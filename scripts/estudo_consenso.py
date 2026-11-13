@@ -24,6 +24,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import tickers_13f as tk  # noqa: E402
+
 RAIZ = Path(__file__).resolve().parent.parent
 CACHE = RAIZ / "user_data" / "estudo_consenso"
 CACHE_13F = CACHE / "13f"
@@ -64,11 +67,12 @@ def baixar13f():
                 por_periodo[f["period"]] = f
         for periodo, f in sorted(por_periodo.items()):
             destino = CACHE_13F / f"{cik}_{periodo}.json"
-            if destino.exists():
-                continue
+            if destino.exists() and '"cusip"' in destino.read_text(encoding="utf-8"):
+                continue  # relatorio guardado no formato antigo (sem CUSIP) e baixado de novo
             try:
                 h = ferramenta("holdings", cik, "--accession", f["accession"])
-                posicoes = [{"ticker": p.get("ticker"), "pct": p.get("pct_of_13f"), "put_call": p.get("put_call")}
+                posicoes = [{"ticker": p.get("ticker"), "pct": p.get("pct_of_13f"), "put_call": p.get("put_call"),
+                             "cusip": p.get("cusip"), "nome": p.get("name") or p.get("issuer")}
                             for p in h.get("positions", [])]
                 destino.write_text(json.dumps({"cik": cik, "periodo": periodo, "entregue": f["filed"],
                                                "posicoes": posicoes}), encoding="utf-8")
@@ -76,11 +80,12 @@ def baixar13f():
             except Exception as erro:
                 print(f"{nome} {periodo}: erro ({erro})", flush=True)
             time.sleep(0.3)
+    tk.mapear_cusips(carregar13f())
     print("fim 13F", flush=True)
 
 
 def carregar13f() -> list[dict]:
-    return [json.loads(a.read_text(encoding="utf-8")) for a in sorted(CACHE_13F.glob("*.json"))]
+    return tk.resolver([json.loads(a.read_text(encoding="utf-8")) for a in sorted(CACHE_13F.glob("*.json"))])
 
 
 def maiores_apostas(relatorio: dict, minimo: float = 3.0) -> dict:

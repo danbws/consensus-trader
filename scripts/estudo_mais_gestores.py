@@ -52,11 +52,12 @@ def baixar13f():
                 por_periodo[f["period"]] = f
         for periodo, f in sorted(por_periodo.items()):
             destino = PASTA_13F / f"{cik}_{periodo}.json"
-            if destino.exists():
-                continue
+            if destino.exists() and '"cusip"' in destino.read_text(encoding="utf-8"):
+                continue  # relatorio guardado no formato antigo (sem CUSIP) e baixado de novo
             try:
                 h = ec.ferramenta("holdings", cik, "--accession", f["accession"])
-                posicoes = [{"ticker": p.get("ticker"), "pct": p.get("pct_of_13f"), "put_call": p.get("put_call")}
+                posicoes = [{"ticker": p.get("ticker"), "pct": p.get("pct_of_13f"), "put_call": p.get("put_call"),
+                             "cusip": p.get("cusip"), "nome": p.get("name") or p.get("issuer")}
                             for p in h.get("positions", [])]
                 destino.write_text(json.dumps({"cik": cik, "periodo": periodo, "entregue": f["filed"],
                                                "posicoes": posicoes}), encoding="utf-8")
@@ -64,10 +65,11 @@ def baixar13f():
                 print(f"{nome} {periodo}: erro ({erro})", flush=True)
             time.sleep(0.3)
         print(f"{nome}: {len(por_periodo)} relatorios", flush=True)
+    ec.tk.mapear_cusips(carregar_novos())
 
 
 def carregar_novos() -> list[dict]:
-    return [json.loads(a.read_text(encoding="utf-8")) for a in sorted(PASTA_13F.glob("*.json"))]
+    return ec.tk.resolver([json.loads(a.read_text(encoding="utf-8")) for a in sorted(PASTA_13F.glob("*.json"))])
 
 
 def baixar_precos(relatorios: list[dict]):
@@ -147,11 +149,15 @@ def medir(s):
 def main():
     if "--sem-baixar" not in sys.argv:
         baixar13f()
-        baixar_precos(carregar_novos())
     originais, novos = ec.carregar13f(), carregar_novos()
     print(f"\n{len(originais)} relatorios dos 16 originais + {len(novos)} dos novos "
           f"({len({r['cik'] for r in novos})} gestores com dados)")
     px = pd.read_parquet(ec.CACHE / "precos.parquet").sort_index()
+    # acoes que so aparecem com a leitura corrigida (13/11): preco a parte, cortado se o ticker foi reaproveitado
+    import estudo_sobrevivencia as es
+    extra = es.baixar_precos(originais + novos, px)
+    extra = pd.DataFrame({t: es.cortar(extra[t]) for t in extra.columns})
+    px = pd.concat([px, extra.reindex(px.index)], axis=1)
     dias = px.index
     datas = []
     for ano in range(2017, 2027):

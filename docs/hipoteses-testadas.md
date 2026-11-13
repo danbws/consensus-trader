@@ -191,3 +191,51 @@ Base: os 16 gestores de hoje + 21 conhecidos por carteiras concentradas e de lon
 - **Viés:** os 21 foram escolhidos hoje, entre gestores que ficaram famosos. O mesmo vale para os 16 originais, mas aqui a escolha foi feita depois de ver 2018-2026. Parte da melhora pode vir disso.
 
 **Veredito:** candidata a mudança (37 gestores, 3 ou mais), com melhora pequena e viés de escolha. Não muda o robô sem o OK do Daniel; se aprovar, vale acompanhar as duas listas lado a lado por alguns trimestres antes de trocar.
+
+## Ações EUA: viés de sobrevivência e posições sem ticker (12/11, scripts/estudo_sobrevivencia.py)
+
+Pergunta: o resultado do consenso está inflado porque os preços só têm empresas que sobreviveram?
+O que se achou antes: parte das posições dos 13F vem **sem ticker**, porque a ferramenta não acha o CUSIP na lista de hoje. Eram ~30% do peso em 2017-18 e ~8% em 2026, e o estudo e o robô simplesmente ignoram essas posições. Não são só empresas mortas (Allergan, Altaba, United Technologies, Twitter): há empresas vivas grandes, como Bank of America (a do Buffett), Brookfield (BN; aparece como BKPA, que a corretora não negocia) e Facebook antes de virar META.
+Correção: os mesmos 596 relatórios baixados de novo com CUSIP e nome; ticker pela OpenFIGI e, para as 17 que ela não acha, pelo nome; preço histórico da Alpaca, que guarda as que saíram da bolsa. Peso sem ticker caiu de 20,4% para 6,8% (o que sobra é ação estrangeira e posição pequena). Mesma regra de antes.
+
+| Versão | 2018-2021 | 2022-2026 |
+|---|---|---|
+| S&P 500 | 14,9% ao ano | 13,8% |
+| Original (como o robô lê hoje) | 15,3% | 15,3% |
+| **Corrigido (com o que faltava)** | **18,3%** | **13,0%** |
+
+- Viés de sobrevivência clássico: pequeno. Só duas empresas saíram da bolsa enquanto estavam na carteira corrigida (Allergan e CONSOL), as duas compradas por outra empresa, sem quebra.
+- O que muda o resultado é o buraco no ticker: em 2022-2026 a carteira corrigida troca 1 a 3 nomes por trimestre (entram BAC e BN; saem V, AAPL, MSFT), e isso basta para tirar 2,3 pontos por ano.
+- **Em 2022-2026, com os dados completos, o consenso fica abaixo do S&P** (13,0% contra 13,8%). A vantagem que parecia confirmada no 2º período não se sustenta.
+- Lista de hoje: com os dados completos, entra BN e sai QSR. O resto é igual.
+- O estudo de 37 gestores e as listas lado a lado usam a mesma leitura e têm o mesmo buraco.
+
+**Veredito:** a leitura dos 13F tem um erro que o robô carrega para a lista real e precisa ser corrigido; isso é conserto de dado, não ajuste de resultado. A conclusão muda: com dado completo, o consenso não mostrou vantagem sobre o S&P no período de confirmação. Não muda o robô sem o OK do Daniel.
+
+**Corrigido no robô em 13/11** (pedido do Daniel): `scripts/tickers_13f.py` resolve o ticker que falta (OpenFIGI pelo CUSIP e, se não achar, pelo nome) e os 13F passam a ser guardados com CUSIP e nome. Vale para o robô, para as listas lado a lado e para os estudos. A leitura antiga ficou em `user_data/estudo_sobrevivencia/13f_antigo` para comparação. Efeito na lista real: sai QSR, entra BN.
+
+## Ações EUA: 37 gestores refeito com os dados corrigidos (13/11, scripts/estudo_mais_gestores.py)
+
+Mesmo estudo de 12/11, agora com a leitura corrigida dos 13F (os 790 relatórios dos 21 gestores novos baixados de novo com CUSIP) e com os preços das empresas que saíram da bolsa.
+
+| Versão | 2018-2021 | 2022-2026 | Pior queda 2022-2026 |
+|---|---|---|---|
+| S&P 500 | 14,9% ao ano | 13,8% | −22,1% |
+| **16 gestores, 2+ (a regra de hoje)** | **18,3%** | **13,0%** | −28,9% |
+| 16 gestores, 3+ | 18,5% | 14,0% | −32,0% |
+| 37 gestores, 3+ | 18,0% | 15,5% | −29,5% |
+| 37 gestores, 4+ | 18,0% | 16,7% | −30,0% |
+| 37 gestores, 3+, top 8 | 19,1% | 18,5% | −30,2% |
+| 37 gestores, 3+, top 12 | 16,2% | 13,6% | −29,7% |
+| 37 gestores, 3+, corte 5% | 18,4% | 15,4% | −31,6% |
+| Só os 21 novos | 18,8% | 13,6% | −32,1% |
+
+- Com 37 gestores, 2+ e 3+ dão a mesma carteira: sempre há 10 ou mais ações com 3 gestores, e a contagem vem primeiro.
+- Com dado completo, a vantagem de 2018-2021 sobre a regra de hoje sumiu (18,0% contra 18,3%). Em 2022-2026 ficou: 15,5% contra 13,0%.
+- 37 gestores, 3+ é a única versão comparável que ganha do S&P nos dois períodos; a regra de hoje perde em 2022-2026.
+- Tirando um gestor novo de cada vez, 2022-2026 fica entre 14,1% e 16,3%: nos 21 casos acima do S&P e da regra de hoje.
+- Top 8 é o melhor número, mas é um ajuste escolhido olhando o resultado; não vale como regra.
+- Custo: quedas maiores que as do S&P (−29,5% contra −22,1%).
+- **Viés:** continua o mesmo de antes (os 21 foram escolhidos hoje, entre gestores famosos).
+
+**Veredito:** com os dados certos, a candidata de 37 gestores ficou mais forte em relação à regra de hoje, porque a regra de hoje piorou e a de 37 se manteve. A vantagem sobre o S&P é pequena (cerca de 1,7 ponto por ano em 2022-2026) e vem com quedas maiores. Continua candidata: decisão do Daniel, com as listas lado a lado como prova com dados novos.

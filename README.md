@@ -45,9 +45,11 @@ The full log, in Portuguese, is in [docs/hipoteses-testadas.md](docs/hipoteses-t
 | `scripts/estudo_insiders.py` | Insider cluster buys (SEC Form 4, 2016-2026): no edge over the S&P 500 |
 | `scripts/estudo_compras_gestores.py` | Following what the managers bought in the quarter instead of what they hold: worse than the consensus |
 | `scripts/estudo_fatia_btc.py` | A fixed bitcoin slice inside the consensus portfolio, rebalanced every 3 months |
-| `scripts/estudo_mais_gestores.py` | Consensus with 37 managers instead of 16: a small gain, with selection bias |
+| `scripts/estudo_mais_gestores.py` | Consensus with 37 managers instead of 16: beats the S&P in both periods after the 13F fix, with selection bias |
 | `scripts/aprendizado_diario.py` | Daily learning routine: checks the paper portfolio against the study, runs one queued study a week and re-checks the edge every month. It never changes the rule by itself |
 | `scripts/listas_lado_a_lado.py` | Two simulated portfolios side by side from 12/11/2026: today's 16-manager list and the 37-manager candidate (no orders) |
+| `scripts/estudo_sobrevivencia.py` | Survivorship bias and 13F positions with no ticker: small bias, but the missing tickers hid big holdings (BAC, BN) |
+| `scripts/tickers_13f.py` | Fills 13F tickers the filing tool misses (OpenFIGI by CUSIP, then by name); used by the robot and the studies |
 | `scripts/simula_aportes.py` | Monthly contributions and compounding scenarios for the consensus portfolio |
 | `user_data/strategies/` | The Freqtrade strategies that were tested (`RoboSaidas.py` is the one running) |
 | `painel/` | FastAPI panel (charts, gains, settings) and the Telegram bot |
