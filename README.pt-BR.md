@@ -50,6 +50,7 @@ O caderno completo está em [docs/hipoteses-testadas.md](docs/hipoteses-testadas
 | `scripts/listas_lado_a_lado.py` | Duas carteiras simuladas lado a lado desde 12/11/2026: a lista de 16 gestores de hoje e a candidata de 37 (sem ordens) |
 | `scripts/estudo_sobrevivencia.py` | Viés de sobrevivência e posições do 13F sem ticker: viés pequeno, mas o ticker faltando escondia posições grandes (BAC, BN) |
 | `scripts/tickers_13f.py` | Preenche o ticker que a ferramenta do 13F não acha (OpenFIGI pelo CUSIP e depois pelo nome); usado pelo robô e pelos estudos |
+| `scripts/estudo_gvip.py` | Consenso contra o GVIP (fundo do Goldman com a lista VIP dos hedge funds): o GVIP não ganhou do S&P; os nossos ganharam do GVIP, talvez por viés de escolha dos gestores |
 | `scripts/simula_aportes.py` | Aportes mensais e juros compostos: cenários para a carteira de consenso |
 | `user_data/strategies/` | As estratégias do Freqtrade que foram testadas (`RoboSaidas.py` é a que está ligada) |
 | `painel/` | Painel em FastAPI (gráficos, ganhos, configurações) e o bot do Telegram |

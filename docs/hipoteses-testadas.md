@@ -239,3 +239,21 @@ Mesmo estudo de 12/11, agora com a leitura corrigida dos 13F (os 790 relatórios
 - **Viés:** continua o mesmo de antes (os 21 foram escolhidos hoje, entre gestores famosos).
 
 **Veredito:** com os dados certos, a candidata de 37 gestores ficou mais forte em relação à regra de hoje, porque a regra de hoje piorou e a de 37 se manteve. A vantagem sobre o S&P é pequena (cerca de 1,7 ponto por ano em 2022-2026) e vem com quedas maiores. Continua candidata: decisão do Daniel, com as listas lado a lado como prova com dados novos.
+
+## Ações EUA: consenso contra o GVIP do Goldman Sachs (13/11, scripts/estudo_gvip.py)
+
+Pergunta: o nosso consenso rende mais que o GVIP, o fundo do Goldman que segue a lista "VIP dos hedge funds" (a mesma ideia, feita por profissionais, com os 13F de centenas de fundos)?
+Base: carteiras com a leitura corrigida dos 13F; GVIP e SPY com preço ajustado por dividendos. O GVIP já desconta a taxa do fundo (0,45% ao ano).
+
+| Versão | 2018-2021 | 2022-2026 | Pior queda 2022-2026 |
+|---|---|---|---|
+| S&P 500 | 14,9% ao ano | 13,8% | −22,1% |
+| GVIP (Goldman) | 15,2% | 12,9% | −29,5% |
+| 16 gestores, 2+ (a regra de hoje) | 18,3% | 13,0% | −28,9% |
+| 37 gestores, 3+ (candidata) | 18,0% | 15,5% | −29,5% |
+
+- O GVIP praticamente empata com o S&P em 2018-2021 e perde em 2022-2026, com quedas maiores. A versão profissional da ideia, escolhida por regra fixa e sem olhar para trás, não ganhou do mercado.
+- Os dois consensos ganham do GVIP nos dois períodos. A candidata de 37 rende mais que o GVIP em 60% das janelas de 1 ano; a regra de hoje, em 51% (um cara ou coroa).
+- Os três andam juntos (correlação diária de 0,85 a 0,86 com o GVIP): a diferença está em poucas ações.
+
+**Veredito:** o resultado do GVIP reforça a cautela. Quando a ideia do consenso é aplicada sem escolher a dedo quais gestores seguir, ela não bate o S&P. A vantagem dos nossos consensos sobre o GVIP pode vir justamente da escolha dos gestores feita hoje (viés de escolha). Nada muda no robô; o GVIP passa a ser a régua de comparação junto com o S&P.
