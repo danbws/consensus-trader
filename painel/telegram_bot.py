@@ -154,7 +154,19 @@ class BotTelegram:
                 return None
             vale = sum(float(p["market_value"]) for p in a["posicoes"])
             est["acoes_fora"] = round(equity - vale - float(cons["caixa"]), 2)
+            est["acoes_aportes"] = self._aportes_acoes()
+        # dinheiro novo na carteira (user_data/aportes.json) sai do saldo "fora"; o topo sobe junto, nao e ganho
+        novo = round(self._aportes_acoes() - float(est.get("acoes_aportes") or 0), 2)
+        if novo:
+            est["acoes_fora"] = round(float(est["acoes_fora"]) - novo, 2)
+            if est.get("acoes_pico"):
+                est["acoes_pico"] = round(float(est["acoes_pico"]) + novo, 2)
+            est["acoes_aportes"] = round(float(est.get("acoes_aportes") or 0) + novo, 2)
         return equity - float(est["acoes_fora"])
+
+    def _aportes_acoes(self) -> float:
+        return round(sum(float(a.get("valor") or 0) for a in self._ler(self.pasta / "aportes.json", [])
+                         if a.get("tipo") == "acoes"), 2)
 
     # ---------------------------------------------------------------- telas
     @staticmethod
