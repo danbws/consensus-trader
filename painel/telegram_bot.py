@@ -19,13 +19,18 @@ from pathlib import Path
 
 import httpx
 
+from setores import concentracao
+
 PAINEL = "http://127.0.0.1:8090"
 CAB = {"X-Painel": "sim"}
 AVISOS_PADRAO = {"operacoes": True, "travas": True, "investidores": True, "acoes": True, "queda_acoes": True,
-                 "resumo_diario": True}
+                 "concentracao": True, "resumo_diario": True}
 NOMES_AVISOS = {"operacoes": "Compras e vendas (cripto)", "travas": "Travas e pausas", "investidores": "Relatório novo de investidor",
                 "acoes": "Ordens de ações executadas", "queda_acoes": "Queda forte das ações (−20%)",
-                "resumo_diario": "Resumo do dia às 20h"}
+                "concentracao": "Ações concentradas num setor (50%+)", "resumo_diario": "Resumo do dia às 20h"}
+# Concentracao por setor (18/11/2026): avisa quando um setor passa de 50%, 60% e 70% da carteira; nao vende.
+CONC_NIVEIS = (50.0, 60.0, 70.0)
+CONC_REARMA = 45.0  # todos os setores abaixo de 45%: os avisos valem de novo
 # Queda da carteira de acoes a partir do maior valor (planejamento-dinheiro-real.md, secao 6): avisa, nao vende.
 QUEDA_NIVEIS = (-20.0, -30.0, -40.0)
 QUEDA_REARMA = -10.0  # voltou para menos de 10% abaixo do topo: os avisos valem de novo
@@ -74,6 +79,32 @@ def avaliar_queda(valor: float, est: dict) -> str | None:
             "O robô <b>não vende</b> por causa disso: queda assim acontece em ano ruim de bolsa e vender no fundo "
             "transforma a queda em perda. Combine a revisão: a regra continua valendo ou o mundo mudou?\n"
             "<i>Planejamento, seção 6.</i>")
+
+
+def avaliar_concentracao(setores: list, est: dict) -> str | None:
+    """setores: [(setor, %, acoes)] do maior para o menor (setores.concentracao). Devolve o aviso quando o maior
+    setor passa de um nivel novo; como na queda, so na 2a leitura seguida (no meio de uma troca o peso oscila)."""
+    if not setores:
+        return None
+    nome, peso, acoes = setores[0]
+    nivel = float(est.get("conc_nivel") or 0)
+    if peso < CONC_REARMA:
+        est["conc_nivel"], est["conc_acima"] = 0, None
+        return None
+    novo = max([n for n in CONC_NIVEIS if peso >= n and n > nivel], default=None)
+    if novo is None:
+        est["conc_acima"] = None
+        return None
+    if est.get("conc_acima") != novo:
+        est["conc_acima"] = novo
+        return None
+    est["conc_nivel"], est["conc_acima"] = novo, None
+    outros = " · ".join(f"{e(s)} {p:.0f}%" for s, p, _ in setores[1:4])
+    return (f"🧩 <b>{peso:.0f}% das ações estão em {e(nome)}</b>\n"
+            f"{e(', '.join(acoes))}\n"
+            + (f"Resto: {outros}\n" if outros else "") +
+            "\nAções do mesmo setor costumam cair juntas: uma notícia ruim do setor pesa na carteira inteira. "
+            "O robô <b>não muda nada sozinho</b>; a lista continua a dos gestores. Vale decidir se aceita esse risco.")
 
 
 class BotTelegram:
@@ -163,6 +194,12 @@ class BotTelegram:
                 est["acoes_pico"] = round(float(est["acoes_pico"]) + novo, 2)
             est["acoes_aportes"] = round(float(est.get("acoes_aportes") or 0) + novo, 2)
         return equity - float(est["acoes_fora"])
+
+    def setores_carteira(self, a: dict) -> list:
+        """Peso de cada setor na carteira de consenso (acoes + caixa do robo), do maior para o menor."""
+        nome = "consenso.json" if a.get("corretora", "alpaca") == "alpaca" else f"consenso_{a['corretora']}.json"
+        cons = self._ler(self.pasta.parent / "acoes-eua" / "trader" / "state" / nome, {})
+        return concentracao(a.get("posicoes") or [], float(cons.get("caixa") or 0))
 
     def _aportes_acoes(self) -> float:
         return round(sum(float(a.get("valor") or 0) for a in self._ler(self.pasta / "aportes.json", [])
@@ -287,6 +324,10 @@ class BotTelegram:
             nome = f"{e(nomes.get(sym, sym))} ({e(sym)})" if sym in nomes else e(sym)
             linhas.append(f"{bola} <b>{nome}</b>  {'+' if g >= 0 else '−'}{usd(abs(g))} ({pct((vale / pago - 1) * 100 if pago else 0)})")
             linhas.append(f"      pagou {usd(pago)} · vale {usd(vale)}")
+        setores = self.setores_carteira(a)
+        if setores:
+            linhas += ["", "<b>Por setor</b>"] + [f"{'⚠️' if p >= CONC_NIVEIS[0] else '▫️'} {e(s)}: {p:.0f}% ({e(', '.join(t))})"
+                                                  for s, p, t in setores]
         est = self._ler(self.arq_estado, {})
         if (est.get("acoes_pico") and est.get("acoes_fora") is not None
                 and est.get("acoes_corretora", "alpaca") == a.get("corretora", "alpaca")):
@@ -480,6 +521,9 @@ class BotTelegram:
                 aviso = avaliar_queda(valor, est)
                 if aviso and av["queda_acoes"]:
                     msgs.append(aviso)
+            aviso = avaliar_concentracao(self.setores_carteira(a), est)
+            if aviso and av["concentracao"]:
+                msgs.append(aviso)
         hoje = datetime.now().strftime("%Y-%m-%d")
         if av["resumo_diario"] and datetime.now().hour >= 20 and est.get("resumo_dia") != hoje:
             texto, _ = self.tela_resumo()
