@@ -1,7 +1,8 @@
 r"""
 Duas listas lado a lado (12/11/2026, pedido do Daniel): a carteira de consenso de hoje (16 gestores, acao em 2 ou mais)
 contra a candidata do estudo (37 gestores, acao em 3 ou mais; scripts/estudo_mais_gestores.py).
-As duas sao SIMULADAS aqui, sem ordem nenhuma: US$ 1.000 cada, a partir do mesmo dia, com a mesma regra do robo
+As duas sao SIMULADAS aqui, sem ordem nenhuma: R$ 100 mil cada (US$ 17.811,66 pela PTAX de 17/11/2026; ate 17/11 era
+US$ 1.000, e o que ja existia foi multiplicado na mesma proporcao, sem mudar nenhum percentual), a partir do mesmo dia, com a mesma regra do robo
 (10 acoes em partes iguais, 5% de caixa, troca quando a lista muda e volta ao peso a cada 90 dias, custo 0,2%).
 So dados novos contam: o que acontecer daqui para frente nenhum estudo viu. A rotina de aprendizado chama 1x por dia.
 
@@ -19,7 +20,8 @@ import estudo_consenso as ec  # noqa: E402
 import estudo_mais_gestores as mg  # noqa: E402
 
 ARQ = ad.PASTA / "lado_a_lado.json"
-INICIAL, CAIXA_PCT, DIAS_EQUILIBRIO, CUSTO_LADO = 1000.0, 0.05, 90, 0.001
+INICIAL, CAIXA_PCT, DIAS_EQUILIBRIO, CUSTO_LADO = 17811.66, 0.05, 90, 0.001  # R$ 100 mil em 17/11/2026
+INICIAL_ANTIGO = 1000.0
 VERSOES = {"16": "16 gestores (a regra de hoje)", "37": "37 gestores (candidata)"}
 
 
@@ -59,10 +61,21 @@ def reequilibrar(c: dict, lista: list[str], px: dict, hoje: str):
     c["lista"], c["equilibrado_em"] = lista, hoje
 
 
+def escalar(estado: dict, fator: float):
+    """Muda o tamanho das carteiras simuladas mantendo tudo proporcional (os percentuais nao mudam)."""
+    for c in estado["carteiras"].values():
+        c["caixa"] *= fator
+        c["acoes"] = {s: q * fator for s, q in c["acoes"].items()}
+    estado["historico"] = {d: {k: round(v * fator, 2) for k, v in p.items()} for d, p in estado["historico"].items()}
+    estado["inicial"] = round(INICIAL_ANTIGO * fator, 2)
+
+
 def atualizar() -> dict:
     """Atualiza as duas carteiras simuladas; devolve o placar e as trocas do dia."""
     hoje = str(date.today())
     estado = ad.ler(ARQ, None)
+    if estado is not None and "inicial" not in estado:
+        escalar(estado, INICIAL / INICIAL_ANTIGO)
     try:
         mg.baixar13f()  # so baixa relatorio novo dos 21 gestores a mais (os outros ja estao guardados)
     except Exception:
@@ -74,7 +87,7 @@ def atualizar() -> dict:
     listas = {k: [t for t in v if t in px][:10] for k, v in cand.items()}
     trocas = {}
     if estado is None:
-        estado = {"inicio": hoje, "spy_inicio": px["SPY"], "carteiras": {}, "historico": {}}
+        estado = {"inicio": hoje, "inicial": INICIAL, "spy_inicio": px["SPY"], "carteiras": {}, "historico": {}}
         for k in VERSOES:
             c = {"caixa": INICIAL, "acoes": {}, "lista": [], "ultimo_preco": {}}
             reequilibrar(c, listas[k], px, hoje)
@@ -92,20 +105,21 @@ def atualizar() -> dict:
     for c in estado["carteiras"].values():
         c["ultimo_preco"].update({s: px[s] for s in c["acoes"] if s in px})
     placar = {k: round(valor(c, px), 2) for k, c in estado["carteiras"].items()}
-    placar["spy"] = round(INICIAL * px["SPY"] / estado["spy_inicio"], 2)
+    placar["spy"] = round(estado["inicial"] * px["SPY"] / estado["spy_inicio"], 2)
     estado["historico"][hoje] = placar
     ad.gravar(ARQ, estado)
-    return {"inicio": estado["inicio"], "placar": placar, "trocas": trocas,
+    return {"inicio": estado["inicio"], "inicial": estado["inicial"], "placar": placar, "trocas": trocas,
             "listas": {k: c["lista"] for k, c in estado["carteiras"].items()}}
 
 
 def texto(r: dict) -> str:
     p = r["placar"]
     ini = date.fromisoformat(r["inicio"]).strftime("%d/%m/%Y")
-    linhas = [f"⚖️ <b>Listas lado a lado</b> (simuladas desde {ini}, US$ 1.000 cada)"]
+    base = r.get("inicial", INICIAL)
+    linhas = [f"⚖️ <b>Listas lado a lado</b> (simuladas desde {ini}, R$ 100 mil cada = US$ {base:,.2f})"]
     for k, nome in VERSOES.items():
-        linhas.append(f"{nome}: US$ {p[k]:,.2f} ({(p[k] / INICIAL - 1) * 100:+.2f}%)")
-    linhas.append(f"S&P 500: US$ {p['spy']:,.2f} ({(p['spy'] / INICIAL - 1) * 100:+.2f}%)")
+        linhas.append(f"{nome}: US$ {p[k]:,.2f} ({(p[k] / base - 1) * 100:+.2f}%)")
+    linhas.append(f"S&P 500: US$ {p['spy']:,.2f} ({(p['spy'] / base - 1) * 100:+.2f}%)")
     for k, t in r["trocas"].items():
         if t["saiu"]:
             linhas.append(f"Troca na lista de {k}: saiu {', '.join(t['saiu'])}; entrou {', '.join(t['entrou'])}")
