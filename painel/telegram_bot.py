@@ -19,15 +19,17 @@ from pathlib import Path
 
 import httpx
 
+import vigia_ia
 from setores import concentracao
 
 PAINEL = "http://127.0.0.1:8090"
 CAB = {"X-Painel": "sim"}
 AVISOS_PADRAO = {"operacoes": True, "travas": True, "investidores": True, "acoes": True, "queda_acoes": True,
-                 "concentracao": True, "resumo_diario": True}
+                 "concentracao": True, "ia_bolsa": True, "resumo_diario": True}
 NOMES_AVISOS = {"operacoes": "Compras e vendas (cripto)", "travas": "Travas e pausas", "investidores": "Relatório novo de investidor",
                 "acoes": "Ordens de ações executadas", "queda_acoes": "Queda forte das ações (−20%)",
-                "concentracao": "Ações concentradas num setor (50%+)", "resumo_diario": "Resumo do dia às 20h"}
+                "concentracao": "Ações concentradas num setor (50%+)", "ia_bolsa": "Anthropic e OpenAI na bolsa",
+                "resumo_diario": "Resumo do dia às 20h"}
 # Concentracao por setor (18/11/2026): avisa quando um setor passa de 50%, 60% e 70% da carteira; nao vende.
 CONC_NIVEIS = (50.0, 60.0, 70.0)
 CONC_REARMA = 45.0  # todos os setores abaixo de 45%: os avisos valem de novo
@@ -329,6 +331,7 @@ class BotTelegram:
             linhas += ["", "<b>Por setor</b>"] + [f"{'⚠️' if p >= CONC_NIVEIS[0] else '▫️'} {e(s)}: {p:.0f}% ({e(', '.join(t))})"
                                                   for s, p, t in setores]
         est = self._ler(self.arq_estado, {})
+        linhas += ["", "<b>De olho</b> (fora da carteira)"] + vigia_ia.linhas_tela(est.get("vigia_ia") or {}, usd, pct, e)
         if (est.get("acoes_pico") and est.get("acoes_fora") is not None
                 and est.get("acoes_corretora", "alpaca") == a.get("corretora", "alpaca")):
             valor = float(a["conta"]["equity"]) - float(est["acoes_fora"])
@@ -524,6 +527,14 @@ class BotTelegram:
             aviso = avaliar_concentracao(self.setores_carteira(a), est)
             if aviso and av["concentracao"]:
                 msgs.append(aviso)
+        if time.time() - float(est.get("vigia_ia_em") or 0) >= 300:  # Anthropic e OpenAI: a cada 5 minutos
+            est["vigia_ia_em"] = time.time()
+            try:
+                avisos_ia = vigia_ia.rodada(self.pasta, est.setdefault("vigia_ia", {}), time.time(), usd, pct, e)
+            except Exception:
+                avisos_ia = []
+            if av["ia_bolsa"]:
+                msgs += avisos_ia
         hoje = datetime.now().strftime("%Y-%m-%d")
         if av["resumo_diario"] and datetime.now().hour >= 20 and est.get("resumo_dia") != hoje:
             texto, _ = self.tela_resumo()
